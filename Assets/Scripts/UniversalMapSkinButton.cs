@@ -1,0 +1,90 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UniversalMapSkinButton : MonoBehaviour
+{
+    public int skinIndex;
+    public int price;
+    public Button buyButton;
+    public Button selectButton;
+    public GameObject checkmark;
+
+    private bool wasBought;
+    private bool isSelected;
+
+    void Start()
+    {
+        if (buyButton != null)
+            buyButton.onClick.AddListener(BuySkin);
+        if (selectButton != null)
+            selectButton.onClick.AddListener(SelectSkin);
+
+        UpdateButtonState();
+    }
+
+    void OnEnable()
+    {
+        UpdateButtonState();
+    }
+
+    void Update()
+    {
+        if (!wasBought && buyButton != null)
+        {
+            int points = PlayerPrefs.GetInt("AllTimeKills", 0);
+            buyButton.interactable = points >= price;
+        }
+    }
+
+    void BuySkin()
+    {
+        var manager = FindObjectOfType<MapSkinManager>();
+        if (manager != null)
+        {
+            manager.TryPurchaseMap(skinIndex);
+        }
+    }
+
+    void SelectSkin()
+    {
+        var manager = FindObjectOfType<MapSkinManager>();
+        if (manager != null)
+        {
+            manager.SelectMap(skinIndex);
+        }
+    }
+
+    public void UpdateButtonState()
+    {
+        wasBought = PlayerPrefs.GetInt("MapBought_" + skinIndex, skinIndex == 0 ? 1 : 0) == 1;
+        isSelected = PlayerPrefs.GetInt("SelectedMap", -1) == skinIndex;
+
+        if (!wasBought)
+        {
+            if (buyButton != null) buyButton.gameObject.SetActive(true);
+            if (selectButton != null) selectButton.gameObject.SetActive(false);
+            if (checkmark != null) checkmark.SetActive(false);
+            int points = PlayerPrefs.GetInt("AllTimeKills", 0);
+            if (buyButton != null) buyButton.interactable = points >= price;
+        }
+        else
+        {
+            if (buyButton != null) buyButton.gameObject.SetActive(false);
+
+            if (isSelected)
+            {
+                if (selectButton != null) selectButton.gameObject.SetActive(false);
+                if (checkmark != null) checkmark.SetActive(true);
+            }
+            else
+            {
+                if (selectButton != null)
+                {
+                    selectButton.gameObject.SetActive(true);
+                    selectButton.interactable = true;
+                }
+                if (checkmark != null) checkmark.SetActive(false);
+            }
+        }
+    }
+} 

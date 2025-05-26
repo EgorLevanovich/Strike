@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Ball
+  - Border
+  - TheEndOfMap
+  - uNDERcOLLIDER
+  - UnderCollider
+  - TheEnd
+  - Walls
+  - Enemy
+  - Destroyable
+  - Ground
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Game
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Settings
+    uniqueID: 3004822281
+    locked: 0
+  - name: Shop
+    uniqueID: 2496861773
+    locked: 0
+  - name: Game
+    uniqueID: 3407931117
+    locked: 0
+  - name: New Layer 4
+    uniqueID: 2777822115
+    locked: 0
+  - name: New Layer 5
+    uniqueID: 1203946639
+    locked: 0
+  - name: New Layer 6
+    uniqueID: 1213999733
+    locked: 0
