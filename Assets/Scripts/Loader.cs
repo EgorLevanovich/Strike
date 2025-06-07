@@ -8,8 +8,8 @@ public class Loader : MonoBehaviour
 {
    
     [SerializeField] private string _targetSceneName = "MainMenu";
-    [SerializeField] private float _minLoadDuration = 3f; // Минимальное время загрузки (для плавности)
-    [SerializeField] private Slider _progressBar; // Опциональный прогресс бар
+    [SerializeField] private float _minLoadDuration = 3f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+    [SerializeField] private Slider _progressBar; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
 
     private AsyncOperation _loadingOperation;
     private float _loadProgress;
@@ -22,9 +22,9 @@ public class Loader : MonoBehaviour
 
     private IEnumerator LoadSceneAsync()
     {
-        // Начинаем асинхронную загрузку
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         _loadingOperation = SceneManager.LoadSceneAsync(_targetSceneName);
-        _loadingOperation.allowSceneActivation = false; // Запрещаем автоматический переход
+        _loadingOperation.allowSceneActivation = false; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
         float elapsedTime = 0f;
 
@@ -32,17 +32,17 @@ public class Loader : MonoBehaviour
         {
             elapsedTime += Time.deltaTime;
 
-            // Имитируем прогресс (0.9 - максимум для allowSceneActivation=false)
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (0.9 - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ allowSceneActivation=false)
             _loadProgress = Mathf.Clamp01(elapsedTime / _minLoadDuration * 0.9f);
 
             if (_progressBar != null)
                 _progressBar.value = _loadProgress;
 
-            // Когда загрузка действительно завершена и прошло минимальное время
+            // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             if (_loadingOperation.progress >= 0.9f && elapsedTime >= _minLoadDuration)
             {
                 _isReadyToSwitch = true;
-                OnLoadComplete(); // Можно активировать автоматически или по кнопке
+                OnLoadComplete(); // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 yield break;
             }
 
@@ -50,7 +50,7 @@ public class Loader : MonoBehaviour
         }
     }
 
-    // Вызывается при клике кнопки или автоматически
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     public void OnLoadComplete()
     {
         if (_isReadyToSwitch && _loadingOperation != null)
@@ -59,12 +59,12 @@ public class Loader : MonoBehaviour
         }
     }
 
-    // Для отладки в инспекторе
+    // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     private void OnValidate()
     {
         if (string.IsNullOrEmpty(_targetSceneName))
         {
-            Debug.LogWarning("Укажите имя сцены для загрузки!");
+            // Debug.LogWarning("   пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
         }
     }
 }

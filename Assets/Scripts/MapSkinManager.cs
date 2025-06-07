@@ -27,6 +27,7 @@ public class MapSkinManager : MonoBehaviour
     {
         LoadPurchasedMaps();
         InitializeButtons();
+        ShowMapList();
         UpdateAllDisplays();
         // Если ни одна карта не выбрана, выбираем карту с индексом 0
         if (PlayerPrefs.GetInt("SelectedMap", -1) == -1)
@@ -76,7 +77,8 @@ public class MapSkinManager : MonoBehaviour
 
     void InitializeButtons()
     {
-        for (int i = 0; i < mapButtons.Length; i++)
+        int count = Mathf.Min(maps.Count, mapButtons.Length);
+        for (int i = 0; i < count; i++)
         {
             int mapIndex = i;
             if (mapButtons[i] != null)
@@ -89,7 +91,8 @@ public class MapSkinManager : MonoBehaviour
 
     void Update()
     {
-        for (int i = 0; i < maps.Count; i++)
+        int count = Mathf.Min(maps.Count, mapButtons.Length);
+        for (int i = 0; i < count; i++)
         {
             if (mapButtons[i] != null && !maps[i].isPurchased)
             {
@@ -120,6 +123,9 @@ public class MapSkinManager : MonoBehaviour
                 }
                 
                 UpdateAllDisplays();
+                // Обновляем фон в меню сразу после покупки
+                var loader = FindObjectOfType<BackGroundLoader>();
+                if (loader != null) loader.LoadSelectedBackground();
             }
         }
     }
@@ -129,20 +135,32 @@ public class MapSkinManager : MonoBehaviour
         PlayerPrefs.SetInt("SelectedMap", idx);
         PlayerPrefs.Save();
         ApplyMap(idx);
-        
+        // Обновляем фон в меню мгновенно по индексу, но если не куплено — фон 0
+        var loader = FindObjectOfType<BackGroundLoader>();
+        if (loader != null)
+        {
+            if (maps[idx].isPurchased)
+                loader.ActivateBackgroundByIndex(idx);
+            else
+                loader.ActivateBackgroundByIndex(0);
+        }
         // Обновляем все кнопки сразу
         foreach (var btn in FindObjectsOfType<UniversalMapSkinButton>())
         {
             btn.UpdateButtonState();
         }
-        
         UpdateAllDisplays();
+        // Мгновенно обновляем карту в menu через MenuMapLoader
+        var menuMapLoader = FindObjectOfType<MenuMapLoader>();
+        if (menuMapLoader != null)
+            menuMapLoader.LoadSelectedMenuMap();
     }
 
     public void UpdateAllDisplays()
     {
         int selectedMap = PlayerPrefs.GetInt("SelectedMap", -1);
-        for (int i = 0; i < maps.Count; i++)
+        int count = Mathf.Min(maps.Count, priceTexts.Length, buttonTexts.Length, mapPreviews.Length);
+        for (int i = 0; i < count; i++)
         {
             UpdatePriceDisplay(i);
             UpdateButtonState(i);
@@ -152,7 +170,7 @@ public class MapSkinManager : MonoBehaviour
 
     void UpdatePriceDisplay(int mapIndex)
     {
-        if (mapIndex < priceTexts.Length && priceTexts[mapIndex] != null)
+        if (mapIndex < priceTexts.Length && priceTexts[mapIndex] != null && mapIndex < maps.Count)
         {
             priceTexts[mapIndex].text = maps[mapIndex].price.ToString();
         }
@@ -160,7 +178,7 @@ public class MapSkinManager : MonoBehaviour
 
     void UpdateButtonState(int mapIndex)
     {
-        if (mapIndex < buttonTexts.Length && buttonTexts[mapIndex] != null)
+        if (mapIndex < buttonTexts.Length && buttonTexts[mapIndex] != null && mapIndex < maps.Count)
         {
             buttonTexts[mapIndex].text = maps[mapIndex].isPurchased ? "Куплено" : "Купить";
         }
@@ -168,7 +186,7 @@ public class MapSkinManager : MonoBehaviour
 
     void UpdateMapPreview(int mapIndex)
     {
-        if (mapIndex < mapPreviews.Length && mapPreviews[mapIndex] != null && maps[mapIndex].mapPreview != null)
+        if (mapIndex < mapPreviews.Length && mapPreviews[mapIndex] != null && mapIndex < maps.Count && maps[mapIndex].mapPreview != null)
         {
             mapPreviews[mapIndex].sprite = maps[mapIndex].mapPreview;
         }
@@ -179,6 +197,17 @@ public class MapSkinManager : MonoBehaviour
         PlayerPrefs.SetInt("SelectedMap", mapIndex);
         PlayerPrefs.Save();
         Debug.Log($"Карта {maps[mapIndex].mapName} успешно применена!");
+        PlayerPrefs.SetInt("MapsSelected", mapIndex);
+        PlayerPrefs.Save();
+        // Обновляем фон в меню мгновенно по индексу, но если не куплено — фон 0
+        var loader = FindObjectOfType<BackGroundLoader>();
+        if (loader != null)
+        {
+            if (maps[mapIndex].isPurchased)
+                loader.ActivateBackgroundByIndex(mapIndex);
+            else
+                loader.ActivateBackgroundByIndex(0);
+        }
         // Здесь добавьте код для применения скина карты в вашей игре
     }
 
@@ -230,6 +259,35 @@ public class MapSkinManager : MonoBehaviour
     void OnEnable()
     {
         LoadPurchasedMaps();
+        UpdateAllDisplays();
+    }
+
+    public void ShowMapList()
+    {
+        int firstIndex = 0;
+        int selected = PlayerPrefs.GetInt("SelectedMap", 0);
+        if (maps.Count == 0) return;
+        if (maps[selected].isPurchased)
+        {
+            firstIndex = selected;
+        }
+        else
+        {
+            for (int i = 0; i < maps.Count; i++)
+            {
+                if (maps[i].isPurchased)
+                {
+                    firstIndex = i;
+                    break;
+                }
+            }
+        }
+        if (firstIndex != 0)
+        {
+            var temp = maps[0];
+            maps[0] = maps[firstIndex];
+            maps[firstIndex] = temp;
+        }
         UpdateAllDisplays();
     }
 } 

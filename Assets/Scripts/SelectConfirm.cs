@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class SelectConfirm : MonoBehaviour
 {
-    public GameObject[] characterPrefabs; // Те же префабы, что и в меню выбора
-    public Transform spawnPoint; // Точка спавна в 2D-сцене
+    public GameObject[] characterPrefabs; // пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    public Transform spawnPoint; // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ 2D-пїЅпїЅпїЅпїЅпїЅ
 
     private void Start()
     {
-        int selectedCharacter = PlayerPrefs.GetInt("Selected2DCharacter", 0);
+        int selectedCharacter = PlayerPrefs.GetInt("PlayerSelected", 0);
 
         if (characterPrefabs.Length > selectedCharacter && characterPrefabs[selectedCharacter] != null)
         {
@@ -19,11 +19,11 @@ public class SelectConfirm : MonoBehaviour
                 Quaternion.identity
             );
 
-            // Дополнительно: настройка сортировки слоев (Sorting Layer)
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (Sorting Layer)
             SpriteRenderer renderer = character.GetComponent<SpriteRenderer>();
             if (renderer != null)
             {
-                renderer.sortingLayerName = "Characters"; // Укажите ваш слой
+                renderer.sortingLayerName = "Characters"; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                 renderer.sortingOrder = 0;
             }
         }

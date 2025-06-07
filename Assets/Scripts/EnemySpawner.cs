@@ -3,20 +3,23 @@ using System.Collections;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("�������� ���������")]
+    [Header("Настройки спавна")]
     public GameObject enemyPrefab;
-    public Transform spawnContainer; //     (�������������)
+    public Transform spawnContainer; //     (контейнер)
 
-    [Header("��������� �����")]
-    public int enemyCount = 8;       // ������������ 8 ������
-    public float lineLength = 10f;   // ����� ����� �����
-    public float spawnInterval = 8f; // �������� ����� ��������
-    public float yOffset = 0f;      // �������� �� ���������
+    [Header("Настройки волны")]
+    public int enemyCount = 8;       // максимально 8 шариков
+    public float lineLength = 10f;   // длина линии спавна
+    public float spawnInterval = 8f; // интервал между спавнами
+    public float yOffset = 0f;      // смещение по вертикали
     [Header("Автоматический расчёт расстояния")]
     public float extraSpacing = 0.2f; // дополнительный отступ между шарами
 
-    [Header("Система бонусов")]
+    // Новое поле для ссылки на BonusSystem2D
     public BonusSystem2D bonusSystem;
+
+    // Новый флаг для отслеживания начала новой волны
+    private bool isNewWave = true;
 
     void Start()
     {
@@ -27,6 +30,7 @@ public class EnemySpawner : MonoBehaviour
     {
         while (true)
         {
+            isNewWave = true; // Перед каждой волной отмечаем, что это новая волна
             SpawnLine();
             yield return new WaitForSeconds(spawnInterval);
         }
@@ -52,34 +56,46 @@ public class EnemySpawner : MonoBehaviour
         Vector3 startPoint = transform.position - new Vector3(totalLength / 2, 0, 0);
         startPoint.y += yOffset;
 
-        if (bonusSystem != null && bonusSystem.shouldSpawnBonusInNextWave)
+        bool spawnBonus = bonusSystem != null && bonusSystem.spawnBonusInNextWave && isNewWave;
+        int bonusIndex = spawnBonus ? bonusSystem.bonusIndexInWave : -1;
+
+        Vector2 defaultVelocity = Vector2.down * 2f;
+        var prefabRb = enemyPrefab.GetComponent<Rigidbody2D>();
+        if (prefabRb != null)
+            defaultVelocity = prefabRb.velocity;
+
+        bool bonusSpawned = false;
+        for (int i = 0; i < enemyCount; i++)
         {
-            int bonusIndex = Random.Range(0, enemyCount);
-            for (int i = 0; i < enemyCount; i++)
+            Vector3 spawnPos = startPoint + new Vector3(spacing * i, 0, 0);
+            if (spawnBonus && i == bonusIndex && !bonusSpawned)
             {
-                Vector3 spawnPos = startPoint + new Vector3(spacing * i, 0, 0);
-                if (i == bonusIndex)
+                // Только бонус, без обычного шарика!
+                bonusSpawned = bonusSystem.TrySpawnBonus(spawnPos, defaultVelocity);
+                if (bonusSpawned)
                 {
-                    bonusSystem.SpawnRandomBonusAtPosition(spawnPos);
+                    isNewWave = false; // После первого успешного спавна бонуса сбрасываем флаг
                 }
-                else
+                if (!bonusSpawned)
                 {
-                    GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                    if (spawnContainer != null)
-                        enemy.transform.SetParent(null);
+                    // Не сбрасываем флаги, чтобы попытка повторилась в следующей волне
+                    continue;
                 }
+                continue; // <--- Ключевой момент: не спавним обычный шарик на этом месте!
             }
-            bonusSystem.shouldSpawnBonusInNextWave = false;
+            // Обычный шарик
+            GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+            if (spawnContainer != null)
+                enemy.transform.SetParent(null);
+            var rb = enemy.GetComponent<Rigidbody2D>();
+            if (rb != null)
+                rb.velocity = defaultVelocity;
         }
-        else
+        // Если бонус был заспавнен — сбрасываем оба флага
+        if (bonusSystem != null && bonusSpawned)
         {
-            for (int i = 0; i < enemyCount; i++)
-            {
-                Vector3 spawnPos = startPoint + new Vector3(spacing * i, 0, 0);
-                GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                if (spawnContainer != null)
-                    enemy.transform.SetParent(null);
-            }
+            bonusSystem.spawnBonusInNextWave = false;
+            bonusSystem.pendingBonusRequest = false;
         }
     }
 

@@ -6,6 +6,9 @@ public class PlayerSelect : MonoBehaviour
     private int _index;
     public const string SkinKey = "PlayerSelected";
 
+    // Добавлено: ссылка на RopeWobble
+    public RopeWobble ropeWobble;
+
     private void Start()
     {
         // Создаем индексированный массив персонажей
@@ -17,20 +20,38 @@ public class PlayerSelect : MonoBehaviour
             _characters[i].SetActive(false);
         }
 
-        // Загрузка последнего выбранного персонажа
-        _index = PlayerPrefs.GetInt(SkinKey, 0);
+        // Сортировка: выбранный и купленный персонаж первым, купленные вперед
+        ShowPlayerList();
 
-        // Если выбранный скин куплен — загружаем его, иначе загружаем 0
-        if (IsSkinBought(_index))
+        // Получаем выбранный индекс из PlayerPrefs
+        int selectedIndex = PlayerPrefs.GetInt(SkinKey, 0);
+        // Если выбранный не куплен, ищем первый купленный
+        if (!IsSkinBought(selectedIndex))
         {
-            _characters[_index].SetActive(true);
+            selectedIndex = 0;
+            for (int i = 0; i < _characters.Length; i++)
+            {
+                if (IsSkinBought(i))
+                {
+                    selectedIndex = i;
+                    break;
+                }
+            }
+            PlayerPrefs.SetInt(SkinKey, selectedIndex);
+            PlayerPrefs.Save();
         }
-        else
+        // Находим, где теперь находится выбранный скин в отсортированном массиве
+        int newIndex = 0;
+        for (int i = 0; i < _characters.Length; i++)
         {
-            _index = 0;
-            PlayerPrefs.SetInt(SkinKey, _index);
-            _characters[_index].SetActive(true);
+            if (_characters[i].transform.GetSiblingIndex() == selectedIndex)
+            {
+                newIndex = i;
+                break;
+            }
         }
+        _index = newIndex;
+        _characters[_index].SetActive(true);
     }
 
     public void SelectLeft()
@@ -43,6 +64,9 @@ public class PlayerSelect : MonoBehaviour
         }
         _characters[_index].SetActive(true);
         SaveIfBought();
+        // Добавлено: дергаем верёвку влево
+        if (ropeWobble != null)
+            ropeWobble.Wobble(-1f);
     }
 
     public void SelectRight()
@@ -55,6 +79,9 @@ public class PlayerSelect : MonoBehaviour
         }
         _characters[_index].SetActive(true);
         SaveIfBought();
+        // Добавлено: дергаем верёвку вправо
+        if (ropeWobble != null)
+            ropeWobble.Wobble(1f);
     }
 
     private void SaveIfBought()
@@ -81,5 +108,45 @@ public class PlayerSelect : MonoBehaviour
             _characters[_index].SetActive(true);
             PlayerPrefs.SetInt(SkinKey, _index);
         }
+    }
+
+    public void ShowPlayerList()
+    {
+        // Сортируем: сначала купленные, потом некупленные
+        System.Array.Sort(_characters, (a, b) => {
+            int aIndex = a.transform.GetSiblingIndex();
+            int bIndex = b.transform.GetSiblingIndex();
+            bool aBought = IsSkinBought(aIndex);
+            bool bBought = IsSkinBought(bIndex);
+            if (aBought && !bBought) return -1;
+            if (!aBought && bBought) return 1;
+            return 0;
+        });
+
+        // Перемещаем выбранный скин на самый первый
+        int selected = PlayerPrefs.GetInt(SkinKey, 0);
+        int selectedIndex = -1;
+        for (int i = 0; i < _characters.Length; i++)
+        {
+            int charIndex = _characters[i].transform.GetSiblingIndex();
+            if (charIndex == selected)
+            {
+                selectedIndex = i;
+                break;
+            }
+        }
+        if (selectedIndex > 0)
+        {
+            var temp = _characters[0];
+            _characters[0] = _characters[selectedIndex];
+            _characters[selectedIndex] = temp;
+            _index = 0;
+        }
+        UpdatePlayerListUI();
+    }
+
+    private void UpdatePlayerListUI()
+    {
+        // Здесь обновите отображение списка персонажей, если нужно (например, активируйте нужные объекты или обновите UI)
     }
 }

@@ -10,14 +10,13 @@ public class BallBounce : MonoBehaviour
     public float _speed = 10f;
     public float _sideBounce;
     public AudioSource bounceAudio;
+
     // Start is called before the first frame update
     void Start()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
-       
         _rigidbody2D.velocity = new Vector2(0f,-_speed);
     }
-
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -34,9 +33,8 @@ public class BallBounce : MonoBehaviour
             Vector2 normal = collision.contacts[0].normal;
             _rigidbody2D.velocity = Vector2.Reflect(_rigidbody2D.velocity, normal);
             _rigidbody2D.velocity += new Vector2(normal.x * _sideBounce, 0f);
-            bounceAudio.Play();
+            if (bounceAudio != null) bounceAudio.Play();
         }
-
         if (collision.gameObject.CompareTag("Enemy"))
         {
             Vector2 normal = collision.contacts[0].normal;

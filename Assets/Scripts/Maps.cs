@@ -8,6 +8,10 @@ public class Maps : MonoBehaviour
     private int _index;
     public GameObject[] _maps;
 
+    // Новое: для смены спрайта фона
+    public SpriteRenderer backgroundRenderer; // Drag сюда SpriteRenderer фона в инспекторе
+    public Sprite[] mapBackgrounds; // Сюда спрайты фонов по порядку
+
     public const string SkinKey = "MapsSelected";
 
     public static bool IsMapBought(int index)
@@ -44,6 +48,11 @@ public class Maps : MonoBehaviour
         {
             _characters[_index].SetActive(true);
         }
+        // Новое: меняем фон SpriteRenderer
+        if (backgroundRenderer != null && mapBackgrounds != null && _index < mapBackgrounds.Length)
+        {
+            backgroundRenderer.sprite = mapBackgrounds[_index];
+        }
     }
 
     public void SelectLeft()
@@ -56,6 +65,11 @@ public class Maps : MonoBehaviour
         }
         _characters[_index].SetActive(true);
         Save();
+        // Новое: меняем фон SpriteRenderer
+        if (backgroundRenderer != null && mapBackgrounds != null && _index < mapBackgrounds.Length)
+        {
+            backgroundRenderer.sprite = mapBackgrounds[_index];
+        }
     }
 
     public void SelectRight()
@@ -68,6 +82,11 @@ public class Maps : MonoBehaviour
         }
         _characters[_index].SetActive(true);
         Save();
+        // Новое: меняем фон SpriteRenderer
+        if (backgroundRenderer != null && mapBackgrounds != null && _index < mapBackgrounds.Length)
+        {
+            backgroundRenderer.sprite = mapBackgrounds[_index];
+        }
     }
 
     private void Save()

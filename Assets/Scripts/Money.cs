@@ -28,7 +28,6 @@ public class Money : MonoBehaviour
     {
         Coins += amount;
         if (Coins < 0) Coins = 0;
-        Debug.Log("[Money] Coins now: " + Coins);
         UpdateCoinsText();
         SaveCoins();
     }

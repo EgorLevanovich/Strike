@@ -21,11 +21,24 @@ public class Respawn : MonoBehaviour
     public AudioSource deathMenuMusicSource;
     public GameObject textToHide;
     public GameObject objectToHide;
-   
-    
+    private bool gameStarted = false;
+    public GameObject[] _all;
+    private float startDelay = 0.5f; // Задержка для защиты от ложного срабатывания
+
+    private void Start()
+    {
+        StartCoroutine(EnableGameStartAfterDelay());
+    }
+
+    private IEnumerator EnableGameStartAfterDelay()
+    {
+        yield return new WaitForSeconds(startDelay);
+        gameStarted = true;
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!gameStarted) return;
         if (tag == "Respawn")
         {
             foreach (GameObject obj in _ball)
@@ -33,6 +46,13 @@ public class Respawn : MonoBehaviour
                 if (obj != null)
                     obj.SetActive(false);
             }
+
+            foreach (GameObject obj in _all)
+            {
+                if (obj != null)
+                    obj.SetActive(false);
+            }
+
             _menuShit.SetActive(true);
             _score.SetActive(false);
             _pause.SetActive(false);
@@ -57,6 +77,9 @@ public class Respawn : MonoBehaviour
             {
                 sessionPointsText2.text = EnemyPointsGiver.GetTotalKills().ToString();
             }
+            var adButton = FindObjectOfType<RewardedAdButton>();
+            if (adButton != null)
+                adButton.ShowRewardButton();
         }
     }
 

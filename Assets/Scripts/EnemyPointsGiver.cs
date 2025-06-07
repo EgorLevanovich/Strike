@@ -60,8 +60,8 @@ public class EnemyPointsGiver : MonoBehaviour
         int allTimeKills = PlayerPrefs.GetInt(TOTAL_KILLS_KEY, 0) + multiplier;
         PlayerPrefs.SetInt(TOTAL_KILLS_KEY, allTimeKills);
         
-        // Увеличиваем очки за 10 киллов только если достигли десятка
-        if (allTimeKills % 10 == 0)
+        // Увеличиваем очки за 100 киллов только если достигли сотни
+        if (allTimeKills % 100 == 0)
         {
             int pointsPerHundred = PlayerPrefs.GetInt("PointsPerHundredKills", 0) + 1;
             PlayerPrefs.SetInt("PointsPerHundredKills", pointsPerHundred);

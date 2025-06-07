@@ -13,10 +13,22 @@ public class PlatformMovement : MonoBehaviour
     [SerializeField] private float minX = -387f;
     [SerializeField] private float maxX = 1087f;
     private Vector2 _targetPosition;
+    private Collider2D _platformCollider;
 
     void Start()
     {
         fixedY = transform.position.y;
+        _platformCollider = GetComponent<Collider2D>();
+        if (_platformCollider == null)
+        {
+            Debug.LogError("На платформе отсутствует коллайдер!");
+        }
+        else
+        {
+            Debug.Log($"Тип коллайдера платформы: {_platformCollider.GetType().Name}");
+            Debug.Log($"Размер коллайдера: {_platformCollider.bounds.size}");
+        }
+
         int index = PlayerPrefs.GetInt(PlayerSelect.SkinKey);
         for (int i = 0; i < _players.Length; i++)
         {
@@ -34,10 +46,22 @@ public class PlatformMovement : MonoBehaviour
 
     void OnMouseDown()
     {
-        _isDragging = true;
         Vector3 mouseWorldPos = GetMouseWorldPos();
-        _mouseOffset = transform.position - mouseWorldPos;
-        _mouseOffset.y = 0;
+        Debug.Log($"Нажатие на позицию: {mouseWorldPos}");
+        Debug.Log($"Позиция платформы: {transform.position}");
+        Debug.Log($"Границы коллайдера: {_platformCollider.bounds}");
+
+        if (_platformCollider != null && _platformCollider.OverlapPoint(mouseWorldPos))
+        {
+            Debug.Log("Нажатие внутри коллайдера");
+            _isDragging = true;
+            _mouseOffset = transform.position - mouseWorldPos;
+            _mouseOffset.y = 0;
+        }
+        else
+        {
+            Debug.Log("Нажатие вне коллайдера");
+        }
     }
 
     void OnMouseUp()
@@ -55,15 +79,7 @@ public class PlatformMovement : MonoBehaviour
                 fixedY,
                 transform.position.z
             );
-            _targetPosition = new Vector2(newPosition.x, newPosition.y);
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (_isDragging)
-        {
-            _rb.MovePosition(_targetPosition);
+            _rb.position = new Vector2(newPosition.x, newPosition.y);
         }
     }
 
@@ -72,6 +88,14 @@ public class PlatformMovement : MonoBehaviour
         Vector3 mousePoint = Input.mousePosition;
         mousePoint.z = 0;
         return Camera.main.ScreenToWorldPoint(mousePoint);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground") && gameObject.CompareTag("Player"))
+        {
+            Destroy(gameObject);
+        }
     }
 }
 

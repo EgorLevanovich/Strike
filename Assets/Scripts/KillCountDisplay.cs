@@ -16,6 +16,10 @@ public class KillCountDisplay : MonoBehaviour
             killCountText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             killCountText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             killCountText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            // Фиксируем позицию по X
+            var pos = killCountText.rectTransform.anchoredPosition;
+            pos.x = 398f;
+            killCountText.rectTransform.anchoredPosition = pos;
         }
         if (deathMenuText != null)
         {
@@ -23,6 +27,10 @@ public class KillCountDisplay : MonoBehaviour
             deathMenuText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             deathMenuText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             deathMenuText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            // Фиксируем позицию по X
+            var pos = deathMenuText.rectTransform.anchoredPosition;
+            pos.x = 0f; // Замените 0f на нужное вам значение
+            deathMenuText.rectTransform.anchoredPosition = pos;
         }
         if (pointsPerHundredText != null)
         {

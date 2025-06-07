@@ -11,7 +11,6 @@ public class BallMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         ballCollider = GetComponent<Collider2D>();
-        
         if (rb == null)
         {
             Debug.LogError("Rigidbody2D component is missing!");
@@ -36,8 +35,21 @@ public class BallMovement : MonoBehaviour
         // Если столкнулись с объектом, который можно проходить
         if (collision.gameObject.CompareTag(passThroughTag))
         {
-            // Игнорируем столкновение
             Physics2D.IgnoreCollision(ballCollider, collision.collider, true);
+        }
+        // Если столкнулись с Ground — уничтожаем шарик
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Respawn"))
+        {
+            Time.timeScale = 0f;
+            // Здесь можно добавить вызов меню смерти, если нужно
         }
     }
 } 

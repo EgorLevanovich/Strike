@@ -27,6 +27,7 @@ public class BallManager : MonoBehaviour
     {
         LoadPurchasedBalls();
         InitializeButtons();
+        ShowBallList();
         UpdateAllDisplays();
         // Если ни один мяч не выбран, выбираем первый
         if (PlayerPrefs.GetInt("SelectedBall", -1) == -1)
@@ -108,7 +109,7 @@ public class BallManager : MonoBehaviour
         }
     }
 
-    void TryPurchaseBall(int ballIndex)
+    public void TryPurchaseBall(int ballIndex)
     {
         if (ballIndex >= 0 && ballIndex < balls.Count)
         {
@@ -210,11 +211,7 @@ public class BallManager : MonoBehaviour
     {
         PlayerPrefs.SetInt("SelectedBall", ballIndex);
         PlayerPrefs.Save();
-        Debug.Log($"Мяч {balls[ballIndex].ballName} успешно применён!");
-        var loader = FindObjectOfType<BallSkinLoader>();
-        if (loader != null)
-            loader.LoadSelectedBall();
-        UpdateAllSkinButtons();
+        ApplyBall(ballIndex);
     }
 
     public int GetCurrentBallIndex()
@@ -283,5 +280,34 @@ public class BallManager : MonoBehaviour
     {
         foreach (var btn in FindObjectsOfType<UniversalSkinButton>())
             btn.UpdateButtonState();
+    }
+
+    public void ShowBallList()
+    {
+        int firstIndex = 0;
+        int selected = PlayerPrefs.GetInt("SelectedBall", 0);
+        if (balls.Count == 0) return;
+        if (balls[selected].isPurchased)
+        {
+            firstIndex = selected;
+        }
+        else
+        {
+            for (int i = 0; i < balls.Count; i++)
+            {
+                if (balls[i].isPurchased)
+                {
+                    firstIndex = i;
+                    break;
+                }
+            }
+        }
+        if (firstIndex != 0)
+        {
+            var temp = balls[0];
+            balls[0] = balls[firstIndex];
+            balls[firstIndex] = temp;
+        }
+        UpdateAllDisplays();
     }
 } 

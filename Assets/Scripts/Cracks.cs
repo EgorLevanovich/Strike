@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class HealthSystem : MonoBehaviour
 {
-    [Header("Настройки HP")]
-    [SerializeField] private GameObject[] hearts; // Массив изображений сердечек
+    [Header("РќР°СЃС‚СЂРѕР№РєРё HP")]
+    [SerializeField] private GameObject[] hearts; // РњР°СЃСЃРёРІ СЃРµСЂРґРµС‡РµРє
     [SerializeField] private int maxHP = 3;
     [SerializeField] private string damagingTag = "Border";
     public GameObject _menu;
@@ -48,10 +48,13 @@ public class HealthSystem : MonoBehaviour
 
     private void Die()
     {
-        // Здесь можно добавить эффекты смерти
-        Destroy(gameObject);
+        // РћСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІСЂРµРјСЏ
         Time.timeScale = 0f;
-        // Или вызвать перезагрузку уровня
-        // SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        
+        // РџРѕРєР°Р·С‹РІР°РµРј РјРµРЅСЋ СЃРјРµСЂС‚Рё
+        if (_menu != null)
+        {
+            _menu.SetActive(true);
+        }
     }
 }

@@ -14,6 +14,11 @@ public class BonusSystem2D : MonoBehaviour
     public Rect spawnArea;
     [Tooltip("Chances: 0-CloneBall, 1-Homing, 2-DoublePoints")]
     public float[] bonusChances = new float[3] { 0.33f, 0.33f, 0.34f };
+    public Transform bonusSpawnPoint; // Точка спавна бонусов
+
+    [Header("Bonus Colors")]
+    [Tooltip("Colors for bonuses: 0-CloneBall, 1-Homing, 2-DoublePoints")]
+    public Color[] bonusColors = new Color[3] { Color.white, Color.white, Color.white };
 
     [Header("Clone Ball Effect")]
     public float cloneDuration = 15f;
@@ -30,9 +35,6 @@ public class BonusSystem2D : MonoBehaviour
     public float doublePointsDuration = 15f;
     public GameObject _DoublePoints;
 
-    [Header("Синхронизация размера бонуса")]
-    public GameObject enemyPrefab;
-
     public Text bonusTimerText;
 
     private GameObject currentBonus;
@@ -41,89 +43,72 @@ public class BonusSystem2D : MonoBehaviour
     private Coroutine currentPointsEffect;
     private bool isDoublePointsActive = false;
     private int targetsDestroyed = 0;
+    private Coroutine bonusSpawnCoroutine;
+    private bool isAnyEffectActive = false; // Флаг для отслеживания активных эффектов
 
-    [HideInInspector]
-    public bool shouldSpawnBonusInNextWave = false;
+    [HideInInspector] public bool spawnBonusInNextWave = false;
+    [HideInInspector] public int bonusIndexInWave = -1;
+    // Ссылка на EnemySpawner
+    public EnemySpawner enemySpawner;
+
+    // Новый публичный префаб для выравнивания размера бонуса
+    public GameObject referenceEnemyPrefab;
+
+    [HideInInspector] public bool pendingBonusRequest = false;
 
     private void Start()
     {
         // Проверка настройки префабов при старте
         if (bonusPrefabs == null)
         {
-            Debug.LogError("[BonusSystem2D] Bonus prefabs array is null!");
             return;
         }
-
-        Debug.Log($"[BonusSystem2D] Initialized with {bonusPrefabs.Length} bonus prefabs:");
-        for (int i = 0; i < bonusPrefabs.Length; i++)
-        {
-            if (bonusPrefabs[i] == null)
-                Debug.LogError($"[BonusSystem2D] Prefab at index {i} is null!");
-            else
-                Debug.Log($"[BonusSystem2D] Prefab {i}: {bonusPrefabs[i].name}");
-        }
-
-        // Проверка UI элементов
-        Debug.Log($"[BonusSystem2D] UI Elements status:");
-        Debug.Log($"- _X2: {(_X2 != null ? "Assigned" : "Missing")}");
-        Debug.Log($"- _Homing: {(_Homing != null ? "Assigned" : "Missing")}");
-        Debug.Log($"- _DoublePoints: {(_DoublePoints != null ? "Assigned" : "Missing")}");
 
         if (bonusTimerText != null)
             bonusTimerText.gameObject.SetActive(false);
-        StartCoroutine(BonusSpawnCycle());
+        if (bonusSpawnCoroutine == null)
+            bonusSpawnCoroutine = StartCoroutine(BonusSpawnCycle());
     }
 
-    IEnumerator BonusSpawnCycle()
+    private IEnumerator BonusSpawnCycle()
     {
         while (true)
         {
+            // Ждем, пока текущий бонус не будет собран и все эффекты не закончатся
+            while (isBonusActive || isAnyEffectActive)
+            {
+                yield return null;
+            }
+
+            // Ждем случайное время перед спавном нового бонуса
             float waitTime = Random.Range(minSpawnTime, maxSpawnTime);
             yield return new WaitForSeconds(waitTime);
-            shouldSpawnBonusInNextWave = true;
-            Debug.Log("[BonusSystem2D] Бонус появится в следующей волне!");
-            while (shouldSpawnBonusInNextWave)
-                yield return null;
+
+            // Строгая защита: бонус можно только запросить на следующую волну!
+            if (!isBonusActive && !isAnyEffectActive && enemySpawner != null)
+            {
+                if (!spawnBonusInNextWave) // Не дублируем запрос
+                {
+                    RequestBonusInNextWave(enemySpawner.enemyCount);
+                }
+            }
         }
     }
 
-    void SpawnRandomBonus()
+    private void SpawnRandomBonus()
     {
-        // Проверка массива префабов
-        if (bonusPrefabs == null || bonusPrefabs.Length < 3)
+        if (isBonusActive || currentBonus != null || isAnyEffectActive)
         {
-            Debug.LogError("[BonusSystem2D] Not enough bonus prefabs assigned! Expected 3, got: " + 
-                          (bonusPrefabs == null ? "null" : bonusPrefabs.Length.ToString()));
             return;
-        }
-
-        // Проверяем компоненты всех префабов
-        for (int i = 0; i < bonusPrefabs.Length; i++)
-        {
-            if (bonusPrefabs[i] != null)
-            {
-                var sprite = bonusPrefabs[i].GetComponent<SpriteRenderer>();
-                var collider = bonusPrefabs[i].GetComponent<Collider2D>();
-                var rb = bonusPrefabs[i].GetComponent<Rigidbody2D>();
-                var prefabController = bonusPrefabs[i].GetComponent<BonusController2D>();
-
-                Debug.Log($"[BonusSystem2D] Prefab {(BonusType)i} components:");
-                Debug.Log($"- SpriteRenderer: {(sprite != null ? "Present" : "Missing")}");
-                Debug.Log($"- Collider2D: {(collider != null ? $"Present, isTrigger={collider.isTrigger}" : "Missing")}");
-                Debug.Log($"- Rigidbody2D: {(rb != null ? $"Present, type={rb.bodyType}" : "Missing")}");
-                Debug.Log($"- BonusController2D: {(prefabController != null ? "Already Present!" : "Not present")}");
-            }
         }
 
         float randomValue = Random.value;
         float cumulative = 0;
         BonusType bonusType = BonusType.CloneBall;
 
-        Debug.Log($"[BonusSystem2D] Rolling for bonus. Random value: {randomValue}");
         for (int i = 0; i < bonusChances.Length; i++)
         {
             cumulative += bonusChances[i];
-            Debug.Log($"[BonusSystem2D] Bonus type {(BonusType)i}: Chance {bonusChances[i]}, Cumulative {cumulative}");
             if (randomValue <= cumulative)
             {
                 bonusType = (BonusType)i;
@@ -131,26 +116,31 @@ public class BonusSystem2D : MonoBehaviour
             }
         }
 
-        Debug.Log($"[BonusSystem2D] Selected bonus type: {bonusType}");
-
-        Vector2 spawnPosition = new Vector2(
-            Random.Range(spawnArea.xMin, spawnArea.xMax),
-            Random.Range(spawnArea.yMin, spawnArea.yMax)
-        );
+        Vector2 spawnPosition;
+        if (bonusSpawnPoint != null)
+        {
+            spawnPosition = bonusSpawnPoint.position;
+        }
+        else
+        {
+            spawnPosition = new Vector2(
+                Random.Range(spawnArea.xMin, spawnArea.xMax),
+                Random.Range(spawnArea.yMin, spawnArea.yMax)
+            );
+        }
 
         currentBonus = Instantiate(bonusPrefabs[(int)bonusType], spawnPosition, Quaternion.identity);
+        
+        // Apply color based on bonus type
+        var spriteRenderer = currentBonus.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null && (int)bonusType < bonusColors.Length)
+            spriteRenderer.color = bonusColors[(int)bonusType];
         
         // Проверяем компоненты созданного бонуса
         var spawnedSprite = currentBonus.GetComponent<SpriteRenderer>();
         var spawnedCollider = currentBonus.GetComponent<Collider2D>();
         var spawnedRb = currentBonus.GetComponent<Rigidbody2D>();
         var spawnedController = currentBonus.GetComponent<BonusController2D>();
-
-        Debug.Log($"[BonusSystem2D] Spawned bonus components:");
-        Debug.Log($"- SpriteRenderer: {(spawnedSprite != null ? "Present" : "Missing")}");
-        Debug.Log($"- Collider2D: {(spawnedCollider != null ? $"Present, isTrigger={spawnedCollider.isTrigger}" : "Missing")}");
-        Debug.Log($"- Rigidbody2D: {(spawnedRb != null ? $"Present, type={spawnedRb.bodyType}" : "Missing")}");
-        Debug.Log($"- BonusController2D: {(spawnedController != null ? "Already Present!" : "Not present")}");
 
         isBonusActive = true;
 
@@ -159,49 +149,63 @@ public class BonusSystem2D : MonoBehaviour
         if (spawnedController != null)
         {
             controller = spawnedController;
-            Debug.Log("[BonusSystem2D] Using existing BonusController2D");
         }
         else
         {
             controller = currentBonus.AddComponent<BonusController2D>();
-            Debug.Log("[BonusSystem2D] Added new BonusController2D");
         }
         
         controller.Setup(this, bonusType);
 
-        Debug.Log($"[BonusSystem2D] Spawned {bonusType} bonus at position {spawnPosition}");
+        // Жёстко выставить позицию до установки velocity и параметров Rigidbody2D
+        currentBonus.transform.position = spawnPosition;
+        currentBonus.tag = "Bonus";
+
+        // Устанавливаем скорость и параметры Rigidbody2D
+        var bonusRb = currentBonus.GetComponent<Rigidbody2D>();
+        var refRb = referenceEnemyPrefab != null ? referenceEnemyPrefab.GetComponent<Rigidbody2D>() : null;
+        if (bonusRb != null && refRb != null)
+        {
+            bonusRb.velocity = refRb.velocity;
+            bonusRb.gravityScale = refRb.gravityScale;
+            bonusRb.drag = refRb.drag;
+            bonusRb.angularDrag = refRb.angularDrag;
+            bonusRb.bodyType = refRb.bodyType;
+            bonusRb.interpolation = refRb.interpolation;
+            bonusRb.collisionDetectionMode = refRb.collisionDetectionMode;
+            bonusRb.constraints = refRb.constraints;
+            StartCoroutine(ForceVelocity(bonusRb, refRb.velocity));
+        }
+        else if (bonusRb != null)
+        {
+            bonusRb.velocity = refRb.velocity;
+            StartCoroutine(ForceVelocity(bonusRb, refRb.velocity));
+        }
     }
 
     public void OnBonusCollected(GameObject collectorBall, BonusType bonusType)
     {
         if (currentBonus == null) 
         {
-            Debug.LogError("[BonusSystem2D] OnBonusCollected called but currentBonus is null!");
             return;
         }
-
-        Debug.Log($"[BonusSystem2D] Collected bonus: {bonusType}");
-        Debug.Log($"[BonusSystem2D] Collector ball position: {collectorBall.transform.position}");
-        Debug.Log($"[BonusSystem2D] Bonus position: {currentBonus.transform.position}");
 
         isBonusActive = false;
         Destroy(currentBonus);
         currentBonus = null;
 
+        // Устанавливаем флаг активного эффекта
+        isAnyEffectActive = true;
+
         switch (bonusType)
         {
             case BonusType.CloneBall:
-                Debug.Log("CloneBall bonus activated!");
                 CreateClone(collectorBall);
                 break;
-
             case BonusType.Homing:
-                Debug.Log("Homing bonus activated!");
                 ApplyHomingEffect(collectorBall);
                 break;
-
             case BonusType.DoublePoints:
-                Debug.Log("DoublePoints bonus activated!");
                 ApplyPointsEffect(doublePointsDuration);
                 break;
         }
@@ -209,37 +213,37 @@ public class BonusSystem2D : MonoBehaviour
 
     void CreateClone(GameObject originalBall)
     {
-        _X2.SetActive(true);
-        Vector2 spawnPos = (Vector2)originalBall.transform.position +
-                         (Random.insideUnitCircle.normalized * cloneOffset);
+        if (originalBall == null)
+        {
+            isAnyEffectActive = false;
+            return;
+        }
+
+        Vector2 spawnPos = (Vector2)originalBall.transform.position + (Random.insideUnitCircle.normalized * cloneOffset);
         GameObject newBall = Instantiate(originalBall, spawnPos, Quaternion.identity);
+
+        if (newBall == null)
+        {
+            isAnyEffectActive = false;
+            return;
+        }
+
+        newBall.tag = "Ball";
         newBall.transform.localScale = originalBall.transform.localScale;
 
-        // Копируем скорость
         Rigidbody2D origRb = originalBall.GetComponent<Rigidbody2D>();
         Rigidbody2D cloneRb = newBall.GetComponent<Rigidbody2D>();
         if (origRb != null && cloneRb != null)
             cloneRb.velocity = origRb.velocity;
 
+        StartCoroutine(WaitForCloneEffect(cloneDuration));
         Destroy(newBall, cloneDuration);
-        StartCoroutine(CloneBonusTimerCoroutine(cloneDuration));
     }
 
-    IEnumerator CloneBonusTimerCoroutine(float duration)
+    private IEnumerator WaitForCloneEffect(float duration)
     {
-        if (bonusTimerText != null)
-            bonusTimerText.gameObject.SetActive(true);
-        float startTime = Time.time;
-        while (Time.time - startTime < duration)
-        {
-            float timeLeft = Mathf.Max(0, duration - (Time.time - startTime));
-            if (bonusTimerText != null)
-                bonusTimerText.text = $"{(int)timeLeft}";
-            yield return null;
-        }
-        if (bonusTimerText != null)
-            bonusTimerText.gameObject.SetActive(false);
-        StartCoroutine(BonusSpawnCycle()); // запуск следующего бонуса только после окончания таймера
+        yield return new WaitForSeconds(duration);
+        isAnyEffectActive = false;
     }
 
     void ApplyHomingEffect(GameObject ball)
@@ -261,8 +265,8 @@ public class BonusSystem2D : MonoBehaviour
         Rigidbody2D ballRb = ball.GetComponent<Rigidbody2D>();
         if (ballRb == null)
         {
-            Debug.LogError("[BonusSystem2D] Ball doesn't have Rigidbody2D component!");
             if (bonusTimerText != null) bonusTimerText.gameObject.SetActive(false);
+            isAnyEffectActive = false;
             yield break;
         }
 
@@ -299,7 +303,6 @@ public class BonusSystem2D : MonoBehaviour
                 Destroy(closeEnemies[i]);
                 targetsDestroyed++;
                 destroyedAny = true;
-                Debug.Log($"[BonusSystem2D] Destroyed enemy! Total: {targetsDestroyed}/{maxTargets}");
             }
             if (targetsDestroyed >= maxTargets)
             {
@@ -307,8 +310,7 @@ public class BonusSystem2D : MonoBehaviour
                 if (_Homing != null)
                     _Homing.SetActive(false);
                 currentHomingEffect = null;
-                Debug.Log("[BonusSystem2D] Homing effect completed");
-                StartCoroutine(BonusSpawnCycle()); // Запуск следующего бонуса
+                isAnyEffectActive = false;
                 yield break;
             }
 
@@ -342,14 +344,13 @@ public class BonusSystem2D : MonoBehaviour
                     ballRb.velocity = originalVelocity.normalized * originalSpeed;
                 }
             }
-            // Если кого-то уничтожили — не меняем направление, чтобы не улетать далеко
 
             yield return new WaitForFixedUpdate();
         }
 
         if (bonusTimerText != null)
             bonusTimerText.gameObject.SetActive(false);
-        EndHoming:
+
         // Возвращаем мяч к нормальному движению
         ballRb.velocity = originalVelocity.normalized * originalSpeed;
 
@@ -357,20 +358,16 @@ public class BonusSystem2D : MonoBehaviour
             _Homing.SetActive(false);
 
         currentHomingEffect = null;
-        Debug.Log("[BonusSystem2D] Homing effect completed");
-        StartCoroutine(BonusSpawnCycle()); // Запуск следующего бонуса
-        yield break;
+        isAnyEffectActive = false;
     }
 
     void ApplyPointsEffect(float duration)
     {
         if (currentPointsEffect != null)
         {
-            Debug.Log("[BonusSystem2D] Stopping previous Double Points effect");
             StopCoroutine(currentPointsEffect);
         }
 
-        Debug.Log("[BonusSystem2D] Activating Double Points!");
         currentPointsEffect = StartCoroutine(RunPointsEffect(duration));
     }
 
@@ -382,18 +379,11 @@ public class BonusSystem2D : MonoBehaviour
         
         if (_DoublePoints != null)
             _DoublePoints.SetActive(true);
-        else
-            Debug.LogWarning("[BonusSystem2D] _DoublePoints UI object is not assigned!");
 
         isDoublePointsActive = true;
         if (NewBehaviourScript.Instance != null)
         {
             NewBehaviourScript.Instance.SetScoreMultiplier(2);
-            Debug.Log("[BonusSystem2D] Score multiplier set to 2");
-        }
-        else
-        {
-            Debug.LogWarning("[BonusSystem2D] NewBehaviourScript.Instance is null! (set 2)");
         }
 
         float startTime = Time.time;
@@ -412,23 +402,22 @@ public class BonusSystem2D : MonoBehaviour
         if (NewBehaviourScript.Instance != null)
         {
             NewBehaviourScript.Instance.SetScoreMultiplier(1);
-            Debug.Log("[BonusSystem2D] Double Points effect ended, score multiplier reset to 1");
-        }
-        else
-        {
-            Debug.LogWarning("[BonusSystem2D] NewBehaviourScript.Instance is null! (reset 1)");
         }
 
         if (_DoublePoints != null)
             _DoublePoints.SetActive(false);
 
         currentPointsEffect = null;
-        StartCoroutine(BonusSpawnCycle()); // Запуск следующего бонуса
+        isAnyEffectActive = false;
     }
 
-    public void SpawnRandomBonusAtPosition(Vector2 position)
+    private void SpawnRandomBonusAtPosition(Vector3 position, Vector2 velocity)
     {
-        // Выбор типа бонуса (аналогично SpawnRandomBonus)
+        // Восстановлены проверки, чтобы бонус не спавнился отдельно от волны и не появлялся, если уже есть активный бонус или эффект
+        if (isBonusActive || currentBonus != null || isAnyEffectActive)
+        {
+            return;
+        }
         float randomValue = Random.value;
         float cumulative = 0;
         BonusType bonusType = BonusType.CloneBall;
@@ -442,20 +431,128 @@ public class BonusSystem2D : MonoBehaviour
             }
         }
         currentBonus = Instantiate(bonusPrefabs[(int)bonusType], position, Quaternion.identity);
-        // Синхронизировать размер бонуса с enemyPrefab
-        if (enemyPrefab != null)
-            currentBonus.transform.localScale = enemyPrefab.transform.localScale;
+        if (referenceEnemyPrefab != null)
+        {
+            currentBonus.transform.localScale = referenceEnemyPrefab.transform.localScale;
+        }
+        // Жёстко выставить позицию до установки velocity и параметров Rigidbody2D
+        currentBonus.transform.position = position;
+        currentBonus.tag = "Bonus";
+
+        // Теперь velocity и параметры Rigidbody2D
+        var bonusRb = currentBonus.GetComponent<Rigidbody2D>();
+        var refRb = referenceEnemyPrefab != null ? referenceEnemyPrefab.GetComponent<Rigidbody2D>() : null;
+        if (bonusRb != null && refRb != null)
+        {
+            bonusRb.velocity = velocity;
+            bonusRb.gravityScale = refRb.gravityScale;
+            bonusRb.drag = refRb.drag;
+            bonusRb.angularDrag = refRb.angularDrag;
+            bonusRb.bodyType = refRb.bodyType;
+            bonusRb.interpolation = refRb.interpolation;
+            bonusRb.collisionDetectionMode = refRb.collisionDetectionMode;
+            bonusRb.constraints = refRb.constraints;
+            StartCoroutine(ForceVelocity(bonusRb, velocity));
+        }
+        else if (bonusRb != null)
+        {
+            bonusRb.velocity = velocity;
+            StartCoroutine(ForceVelocity(bonusRb, velocity));
+        }
         var controller = currentBonus.GetComponent<BonusController2D>();
         if (controller == null)
             controller = currentBonus.AddComponent<BonusController2D>();
         controller.Setup(this, bonusType);
         isBonusActive = true;
-        Debug.Log($"[BonusSystem2D] Spawned {bonusType} bonus at position {position}");
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(spawnArea.center, spawnArea.size);
+    }
+
+    // Новый метод: запросить спавн бонуса в следующей волне
+    public void RequestBonusInNextWave(int count)
+    {
+        spawnBonusInNextWave = true;
+        bonusIndexInWave = Random.Range(0, count);
+    }
+
+    public bool TrySpawnBonus(Vector3 position, Vector2 velocity)
+    {
+        if (isBonusActive || currentBonus != null || isAnyEffectActive)
+        {
+            pendingBonusRequest = true;
+            return false;
+        }
+        pendingBonusRequest = false;
+        float randomValue = Random.value;
+        float cumulative = 0;
+        BonusType bonusType = BonusType.CloneBall;
+        for (int i = 0; i < bonusChances.Length; i++)
+        {
+            cumulative += bonusChances[i];
+            if (randomValue <= cumulative)
+            {
+                bonusType = (BonusType)i;
+                break;
+            }
+        }
+        currentBonus = Instantiate(bonusPrefabs[(int)bonusType], position, Quaternion.identity);
+        
+        // Apply color based on bonus type
+        var spriteRenderer = currentBonus.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null && (int)bonusType < bonusColors.Length)
+            spriteRenderer.color = bonusColors[(int)bonusType];
+        
+        if (referenceEnemyPrefab != null)
+        {
+            currentBonus.transform.localScale = referenceEnemyPrefab.transform.localScale;
+        }
+        // Жёстко выставить позицию до установки velocity и параметров Rigidbody2D
+        currentBonus.transform.position = position;
+        currentBonus.tag = "Bonus";
+
+        // Теперь velocity и параметры Rigidbody2D
+        var bonusRb = currentBonus.GetComponent<Rigidbody2D>();
+        var refRb = referenceEnemyPrefab != null ? referenceEnemyPrefab.GetComponent<Rigidbody2D>() : null;
+        if (bonusRb != null && refRb != null)
+        {
+            bonusRb.velocity = velocity;
+            bonusRb.gravityScale = refRb.gravityScale;
+            bonusRb.drag = refRb.drag;
+            bonusRb.angularDrag = refRb.angularDrag;
+            bonusRb.bodyType = refRb.bodyType;
+            bonusRb.interpolation = refRb.interpolation;
+            bonusRb.collisionDetectionMode = refRb.collisionDetectionMode;
+            bonusRb.constraints = refRb.constraints;
+            StartCoroutine(ForceVelocity(bonusRb, velocity));
+        }
+        else if (bonusRb != null)
+        {
+            bonusRb.velocity = velocity;
+            StartCoroutine(ForceVelocity(bonusRb, velocity));
+        }
+        var controller = currentBonus.GetComponent<BonusController2D>();
+        if (controller == null)
+            controller = currentBonus.AddComponent<BonusController2D>();
+        controller.Setup(this, bonusType);
+        isBonusActive = true;
+        return true;
+    }
+
+    private IEnumerator ForceVelocity(Rigidbody2D rb, Vector2 velocity)
+    {
+        yield return null;
+        if (rb != null) rb.velocity = velocity;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            Destroy(gameObject);
+        }
     }
 }

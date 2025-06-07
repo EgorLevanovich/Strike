@@ -8,6 +8,9 @@ public class UniversalMapSkinButton : MonoBehaviour
     public Button buyButton;
     public Button selectButton;
     public GameObject checkmark;
+    public Image mapPreviewImage;
+    public SpriteRenderer mapPreviewRenderer;
+    public AudioSource purchaseSound;
 
     private bool wasBought;
     private bool isSelected;
@@ -38,19 +41,44 @@ public class UniversalMapSkinButton : MonoBehaviour
 
     void BuySkin()
     {
-        var manager = FindObjectOfType<MapSkinManager>();
-        if (manager != null)
+        int points = PlayerPrefs.GetInt("AllTimeKills", 0);
+        if (points >= price)
         {
-            manager.TryPurchaseMap(skinIndex);
+            points -= price;
+            PlayerPrefs.SetInt("AllTimeKills", points);
+            PlayerPrefs.SetInt("MapBought_" + skinIndex, 1);
+            PlayerPrefs.Save();
+            
+            if (purchaseSound != null)
+                purchaseSound.Play();
+            
+            wasBought = true;
+            UpdateButtonState();
+            
+            foreach (var button in FindObjectsOfType<UniversalMapSkinButton>())
+            {
+                button.wasBought = PlayerPrefs.GetInt("MapBought_" + button.skinIndex, button.skinIndex == 0 ? 1 : 0) == 1;
+                button.isSelected = PlayerPrefs.GetInt("SelectedMap", -1) == button.skinIndex;
+                button.UpdateButtonState();
+            }
         }
     }
 
     void SelectSkin()
     {
-        var manager = FindObjectOfType<MapSkinManager>();
-        if (manager != null)
+        if (!wasBought) return;
+
+        PlayerPrefs.SetInt("SelectedMap", skinIndex);
+        PlayerPrefs.Save();
+        
+        isSelected = true;
+        UpdateButtonState();
+        
+        foreach (var button in FindObjectsOfType<UniversalMapSkinButton>())
         {
-            manager.SelectMap(skinIndex);
+            button.wasBought = PlayerPrefs.GetInt("MapBought_" + button.skinIndex, button.skinIndex == 0 ? 1 : 0) == 1;
+            button.isSelected = PlayerPrefs.GetInt("SelectedMap", -1) == button.skinIndex;
+            button.UpdateButtonState();
         }
     }
 
@@ -66,6 +94,18 @@ public class UniversalMapSkinButton : MonoBehaviour
             if (checkmark != null) checkmark.SetActive(false);
             int points = PlayerPrefs.GetInt("AllTimeKills", 0);
             if (buyButton != null) buyButton.interactable = points >= price;
+            if (mapPreviewRenderer != null)
+            {
+                var color = mapPreviewRenderer.color;
+                color.a = 0.5f;
+                mapPreviewRenderer.color = color;
+            }
+            else if (mapPreviewImage != null)
+            {
+                var color = mapPreviewImage.color;
+                color.a = 0.5f;
+                mapPreviewImage.color = color;
+            }
         }
         else
         {
@@ -84,6 +124,18 @@ public class UniversalMapSkinButton : MonoBehaviour
                     selectButton.interactable = true;
                 }
                 if (checkmark != null) checkmark.SetActive(false);
+            }
+            if (mapPreviewRenderer != null)
+            {
+                var color = mapPreviewRenderer.color;
+                color.a = 1f;
+                mapPreviewRenderer.color = color;
+            }
+            else if (mapPreviewImage != null)
+            {
+                var color = mapPreviewImage.color;
+                color.a = 1f;
+                mapPreviewImage.color = color;
             }
         }
     }

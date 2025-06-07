@@ -289,7 +289,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: 511dfccd1c68ace47bc1599bcdb0de73, type: 3}
+      m_Icon: {fileID: 2800000, guid: 54aa8dcc8c50c164b893a5f81e5c1b27, type: 3}
       m_Width: 128
       m_Height: 128
       m_Kind: 0
@@ -930,11 +930,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 0a30083e-e5b6-49bf-8982-2e7bda03275c
+  cloudProjectId: 4832d61c-b796-42cb-a088-e70fc0a14e8c
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Strike
-  organizationId: bobik_2288
+  projectName: Strike2
+  organizationId: universal_gaming-9a8170b5-7b88-4956-be7d-d0ea4e0235be
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

@@ -57,12 +57,13 @@ public class MenuLoading : MonoBehaviour
 
     public void GameLoader()
     {
+        SceneManager.LoadScene("Game");
         if (NewBehaviourScript.Instance != null)
         {
             NewBehaviourScript.Instance.sessionBalls = 0;
         }
         
-        SceneManager.LoadScene("gameplay");
+        
         Time.timeScale = 1.0f;
     }
 
@@ -70,6 +71,8 @@ public class MenuLoading : MonoBehaviour
     {
         SceneManager.LoadScene("Menu");
         Time.timeScale = 1.0f;
+        var loader = FindObjectOfType<BackGroundLoader>();
+        if (loader != null) loader.LoadSelectedBackground();
     }
 
     public void Exit()
@@ -79,6 +82,8 @@ public class MenuLoading : MonoBehaviour
         _platformskins.SetActive(false);
         _backgroundskins.SetActive(false);
         _BallSkins.SetActive(false);
+        var loader = FindObjectOfType<BackGroundLoader>();
+        if (loader != null) loader.LoadSelectedBackground();
     }
 
     public void ShopLoader()

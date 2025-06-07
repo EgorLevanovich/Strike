@@ -3,6 +3,8 @@ using UnityEngine;
 public class BallSkinLoader : MonoBehaviour
 {
     public GameObject[] ballPrefabs; // Префабы или объекты мячей на сцене
+    private const string SELECTED_BALL_KEY = "SelectedBall";
+    private const string BALL_BOUGHT_KEY = "BallBought_";
 
     void Start()
     {
@@ -11,24 +13,29 @@ public class BallSkinLoader : MonoBehaviour
 
     public void LoadSelectedBall()
     {
-        int selectedBallIndex = PlayerPrefs.GetInt("SelectedBall", -1);
+        int selectedBallIndex = PlayerPrefs.GetInt(SELECTED_BALL_KEY, -1);
 
-        // Если мяч не выбран или не куплен, деактивируем все
-        if (selectedBallIndex == -1 || !IsBallBought(selectedBallIndex))
+        // Проверяем, что массив префабов не пустой
+        if (ballPrefabs == null || ballPrefabs.Length == 0)
         {
-            foreach (GameObject ball in ballPrefabs)
-            {
-                if (ball != null)
-                    ball.SetActive(false);
-            }
             return;
         }
 
-        // Деактивируем все мячи
-        foreach (GameObject ball in ballPrefabs)
+        // Если мяч не выбран или не куплен, используем первый мяч
+        if (selectedBallIndex == -1 || !IsBallBought(selectedBallIndex))
         {
-            if (ball != null)
-                ball.SetActive(false);
+            selectedBallIndex = 0;
+            PlayerPrefs.SetInt(SELECTED_BALL_KEY, selectedBallIndex);
+            PlayerPrefs.Save();
+        }
+
+        // Деактивируем все мячи
+        for (int i = 0; i < ballPrefabs.Length; i++)
+        {
+            if (ballPrefabs[i] != null)
+            {
+                ballPrefabs[i].SetActive(false);
+            }
         }
 
         // Активируем только выбранный и купленный
@@ -40,6 +47,7 @@ public class BallSkinLoader : MonoBehaviour
 
     private bool IsBallBought(int index)
     {
-        return PlayerPrefs.GetInt("BallBought_" + index, index == 0 ? 1 : 0) == 1;
+        bool isBought = PlayerPrefs.GetInt(BALL_BOUGHT_KEY + index, index == 0 ? 1 : 0) == 1;
+        return isBought;
     }
 } 

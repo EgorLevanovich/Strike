@@ -56,7 +56,7 @@ public class Pause : MonoBehaviour
 
     public void ResetGame()
     {
-        SceneManager.LoadScene("gameplay");
+        SceneManager.LoadScene("Game");
         Time.timeScale = 1;
         if (pauseButtonCanvasGroup != null)
         {

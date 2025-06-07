@@ -28,13 +28,6 @@ public class PlatformSkinManager : MonoBehaviour
         LoadPurchasedPlatforms();
         InitializeButtons();
         UpdateAllDisplays();
-        // Если ни одна платформа не выбрана, выбираем первую
-        if (PlayerPrefs.GetInt("SelectedPlatform", -1) == -1)
-        {
-            PlayerPrefs.SetInt("SelectedPlatform", 0);
-            PlayerPrefs.Save();
-            ApplyPlatform(0);
-        }
         // Скрываем все selectButtons для некупленных платформ
         if (selectButtons != null)
         {
@@ -43,6 +36,13 @@ public class PlatformSkinManager : MonoBehaviour
                 if (selectButtons[i] != null)
                     selectButtons[i].gameObject.SetActive(false);
             }
+        }
+        // Если ни одна платформа не выбрана, выбираем платформу с индексом 0
+        if (PlayerPrefs.GetInt("SelectedPlatform", -1) == -1)
+        {
+            PlayerPrefs.SetInt("SelectedPlatform", 0);
+            PlayerPrefs.Save();
+            ApplyPlatform(0);
         }
     }
 

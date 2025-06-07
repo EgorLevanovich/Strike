@@ -6,22 +6,20 @@ using UnityEngine;
 
 public class BallSelectt : MonoBehaviour
 {
-    [SerializeField] private GameObject[] characters; // Массив объектов персонажей
-    private GameObject _player; // Ссылка на текущего активного игрока
-    private int index; // Индекс выбранного персонажа
+    [SerializeField] private GameObject[] characters; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    private GameObject _player; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    private int index; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     private void Start()
     {
-        // Получаем индекс выбранного скина
-        index = PlayerPrefs.GetInt(BallSelected.SkinKey);
-
-        // Активируем только выбранного персонажа
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+        index = PlayerPrefs.GetInt("SelectedBall");
         for (int i = 0; i < characters.Length; i++)
         {
             characters[i].SetActive(i == index);
         }
 
-        // Сохраняем ссылку на активного игрока
+        //     
         _player = characters[index];
     }
     // Update is called once per frame

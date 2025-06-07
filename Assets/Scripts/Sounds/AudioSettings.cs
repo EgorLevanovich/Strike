@@ -8,9 +8,9 @@ public class AudioSettings : MonoBehaviour
 {
     public static AudioSettings Instance { get; private set; }
 
-    [Header("Настройки")]
-    [SerializeField] private AudioMixerGroup _masterMixerGroup; // Группа микшера для управления громкостью
-    private float _currentVolume = 0.75f; // Значение по умолчанию (75%)
+    [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")]
+    [SerializeField] private AudioMixerGroup _masterMixerGroup; // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    private float _currentVolume = 0.75f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (75%)
 
 
     private void Awake()
@@ -25,36 +25,23 @@ public class AudioSettings : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
-        Debug.Log("[AudioManager] Awake called");
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            Debug.Log("[AudioManager] Instance created");
-        }
-        else
-        {
-            Debug.Log("[AudioManager] Duplicate destroyed");
-            Destroy(gameObject);
-        }
     }
 
-    // Устанавливает громкость для всех аудио-источников в Maps
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ Maps
     public void SetVolume(float volume)
     {
         _currentVolume = volume;
 
-        // Сохраняем в PlayerPrefs
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ PlayerPrefs
         PlayerPrefs.SetFloat("MasterVolume", volume);
 
-        // Применяем к микшеру (если используется)
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
         if (_masterMixerGroup != null)
         {
             _masterMixerGroup.audioMixer.SetFloat("MasterVolume", Mathf.Log10(volume) * 20);
         }
 
-        // Находим объект Maps в игровой сцене и обновляем громкость
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ Maps пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         GameObject mapsObject = GameObject.Find("Maps");
         if (mapsObject != null)
         {
@@ -69,7 +56,7 @@ public class AudioSettings : MonoBehaviour
     private void LoadVolume()
     {
         _currentVolume = PlayerPrefs.GetFloat("MasterVolume", 0.75f);
-        SetVolume(_currentVolume); // Применяем загруженное значение
+        SetVolume(_currentVolume); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     }
 
     public float GetCurrentVolume()

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class UniversalPlatformSkinButton : MonoBehaviour
 {
     public int skinIndex;
@@ -9,11 +8,10 @@ public class UniversalPlatformSkinButton : MonoBehaviour
     public Button buyButton;
     public Button selectButton;
     public GameObject checkmark;
-    public Text priceText;
-    public Image coinImage;
-    public GameObject CoinImage;
-    public Image platformSkinImage;
-    public SpriteRenderer platformSkinRenderer;
+    public Image platformPreviewImage;
+    public SpriteRenderer platformPreviewRenderer;
+    public AudioSource purchaseSound;
+
     private bool wasBought;
     private bool isSelected;
 
@@ -43,21 +41,44 @@ public class UniversalPlatformSkinButton : MonoBehaviour
 
     void BuySkin()
     {
-        var manager = FindObjectOfType<PlatformSkinManager>();
-        if (manager != null)
+        int points = PlayerPrefs.GetInt("AllTimeKills", 0);
+        if (points >= price)
         {
-            manager.TryPurchasePlatform(skinIndex);
-            if (priceText != null) priceText.gameObject.SetActive(false);
-            if (coinImage != null) coinImage.gameObject.SetActive(false);
+            points -= price;
+            PlayerPrefs.SetInt("AllTimeKills", points);
+            PlayerPrefs.SetInt("PlatformBought_" + skinIndex, 1);
+            PlayerPrefs.Save();
+            
+            if (purchaseSound != null)
+                purchaseSound.Play();
+            
+            wasBought = true;
+            UpdateButtonState();
+            
+            foreach (var button in FindObjectsOfType<UniversalPlatformSkinButton>())
+            {
+                button.wasBought = PlayerPrefs.GetInt("PlatformBought_" + button.skinIndex, button.skinIndex == 0 ? 1 : 0) == 1;
+                button.isSelected = PlayerPrefs.GetInt("SelectedPlatform", -1) == button.skinIndex;
+                button.UpdateButtonState();
+            }
         }
     }
 
     void SelectSkin()
     {
-        var manager = FindObjectOfType<PlatformSkinManager>();
-        if (manager != null)
+        if (!wasBought) return;
+
+        PlayerPrefs.SetInt("SelectedPlatform", skinIndex);
+        PlayerPrefs.Save();
+        
+        isSelected = true;
+        UpdateButtonState();
+        
+        foreach (var button in FindObjectsOfType<UniversalPlatformSkinButton>())
         {
-            manager.SelectPlatform(skinIndex);
+            button.wasBought = PlayerPrefs.GetInt("PlatformBought_" + button.skinIndex, button.skinIndex == 0 ? 1 : 0) == 1;
+            button.isSelected = PlayerPrefs.GetInt("SelectedPlatform", -1) == button.skinIndex;
+            button.UpdateButtonState();
         }
     }
 
@@ -73,20 +94,22 @@ public class UniversalPlatformSkinButton : MonoBehaviour
             if (checkmark != null) checkmark.SetActive(false);
             int points = PlayerPrefs.GetInt("AllTimeKills", 0);
             if (buyButton != null) buyButton.interactable = points >= price;
-            if (priceText != null) priceText.gameObject.SetActive(true);
-            if (coinImage != null) coinImage.gameObject.SetActive(true);
-            if (platformSkinRenderer != null)
+            if (platformPreviewRenderer != null)
             {
-                var color = platformSkinRenderer.color;
+                var color = platformPreviewRenderer.color;
                 color.a = 0.5f;
-                platformSkinRenderer.color = color;
+                platformPreviewRenderer.color = color;
+            }
+            else if (platformPreviewImage != null)
+            {
+                var color = platformPreviewImage.color;
+                color.a = 0.5f;
+                platformPreviewImage.color = color;
             }
         }
         else
         {
             if (buyButton != null) buyButton.gameObject.SetActive(false);
-            if (priceText != null) priceText.gameObject.SetActive(false);
-            if (coinImage != null) coinImage.gameObject.SetActive(false);
 
             if (isSelected)
             {
@@ -102,11 +125,17 @@ public class UniversalPlatformSkinButton : MonoBehaviour
                 }
                 if (checkmark != null) checkmark.SetActive(false);
             }
-            if (platformSkinRenderer != null)
+            if (platformPreviewRenderer != null)
             {
-                var color = platformSkinRenderer.color;
+                var color = platformPreviewRenderer.color;
                 color.a = 1f;
-                platformSkinRenderer.color = color;
+                platformPreviewRenderer.color = color;
+            }
+            else if (platformPreviewImage != null)
+            {
+                var color = platformPreviewImage.color;
+                color.a = 1f;
+                platformPreviewImage.color = color;
             }
         }
     }

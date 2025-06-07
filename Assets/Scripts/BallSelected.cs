@@ -4,85 +4,65 @@ using UnityEngine;
 
 public class BallSelected : MonoBehaviour
 {
-    private GameObject[] _Ballscharacters;
-    private int _index;
+    public GameObject[] ballCharacters; // Массив префабов мячей
+    private const string SELECTED_BALL_KEY = "SelectedBall";
+    private const string BALL_BOUGHT_KEY = "BallBought_";
 
-    public const string SkinKey = "BallSelected";
-
-    private void Start()
+    void Start()
     {
-        _index = PlayerPrefs.GetInt(SkinKey, 0);
+        LoadSelectedBall();
+    }
 
-        _Ballscharacters = new GameObject[transform.childCount];
+    public void LoadSelectedBall()
+    {
+        int selectedBallIndex = PlayerPrefs.GetInt(SELECTED_BALL_KEY, 0);
 
-        for (int i = 0; i < transform.childCount; i++)
+        // Проверяем, что массив префабов не пустой
+        if (ballCharacters == null || ballCharacters.Length == 0)
         {
-            _Ballscharacters[i] = transform.GetChild(i).gameObject;
-        }
-        foreach (GameObject go in _Ballscharacters)
-        {
-            go.SetActive(false);
+            return;
         }
 
-        // Загружаем только купленный скин, иначе дефолтный
-        if (IsSkinBought(_index))
+        // Деактивируем все мячи
+        for (int i = 0; i < ballCharacters.Length; i++)
         {
-            _Ballscharacters[_index].SetActive(true);
+            if (ballCharacters[i] != null)
+            {
+                ballCharacters[i].SetActive(false);
+            }
         }
-        else
+
+        // Активируем только выбранный и купленный
+        if (selectedBallIndex < ballCharacters.Length && ballCharacters[selectedBallIndex] != null)
         {
-            _index = 0;
-            _Ballscharacters[_index].SetActive(true);
-            PlayerPrefs.SetInt(SkinKey, _index);
+            if (IsBallBought(selectedBallIndex))
+            {
+                ballCharacters[selectedBallIndex].SetActive(true);
+            }
+            else
+            {
+                // Если выбранный мяч не куплен, активируем первый мяч
+                ballCharacters[0].SetActive(true);
+                PlayerPrefs.SetInt(SELECTED_BALL_KEY, 0);
+                PlayerPrefs.Save();
+            }
         }
     }
 
-    public void SelectLeft()
+    private bool IsBallBought(int index)
     {
-        _Ballscharacters[_index].SetActive(false);
-        _index--;
-        if (_index < 0)
-        {
-            _index = _Ballscharacters.Length - 1;
-        }
-        _Ballscharacters[_index].SetActive(true);
-        SaveIfBought();
+        bool isBought = PlayerPrefs.GetInt(BALL_BOUGHT_KEY + index, index == 0 ? 1 : 0) == 1;
+        return isBought;
     }
 
-    public void SelectRight()
+    public void SelectBall(int index)
     {
-        _Ballscharacters[_index].SetActive(false);
-        _index++;
-        if (_index == _Ballscharacters.Length)
+        if (index >= 0 && index < ballCharacters.Length && IsBallBought(index))
         {
-            _index = 0;
+            PlayerPrefs.SetInt(SELECTED_BALL_KEY, index);
+            PlayerPrefs.Save();
+            LoadSelectedBall();
         }
-        _Ballscharacters[_index].SetActive(true);
-        SaveIfBought();
-    }
-
-    private void SaveIfBought()
-    {
-        if (IsSkinBought(_index))
-        {
-            PlayerPrefs.SetInt(SkinKey, _index);
-        }
-        // Если не куплен — не сохраняем выбор
-    }
-
-    public void SelectSkinByIndex(int index)
-    {
-        if (index >= 0 && index < _Ballscharacters.Length && IsSkinBought(index))
-        {
-            _Ballscharacters[_index].SetActive(false);
-            _index = index;
-            _Ballscharacters[_index].SetActive(true);
-            PlayerPrefs.SetInt(SkinKey, _index);
-        }
-    }
-
-    private bool IsSkinBought(int index)
-    {
-        return PlayerPrefs.GetInt("BallSkinBought_" + index, index == 0 ? 1 : 0) == 1;
     }
 }
+ 
