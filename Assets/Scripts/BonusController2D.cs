@@ -9,6 +9,8 @@ public class BonusController2D : MonoBehaviour
     private BonusType bonusType;
     private bool wasCollected = false;
     private SpriteRenderer spriteRenderer;
+    [Header("Audio")]
+    public AudioSource collectSound;
 
     private void Awake()
     {
@@ -26,6 +28,8 @@ public class BonusController2D : MonoBehaviour
     {
         if (!wasCollected && other.CompareTag("Ball") && bonusSystem != null)
         {
+            if (collectSound != null)
+                collectSound.Play();
             wasCollected = true;
             bonusSystem.OnBonusCollected(other.gameObject, bonusType);
             Destroy(gameObject);
@@ -38,11 +42,19 @@ public class BonusController2D : MonoBehaviour
         {
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), collision.collider);
         }
+        else if (collision.gameObject.CompareTag("Ground"))
+        {
+            if (bonusSystem != null)
+                bonusSystem.OnBonusMissed();
+            Destroy(gameObject);
+        }
         else if (collision.gameObject.CompareTag("Ball"))
         {
             // Уничтожаем бонус при столкновении с мячиком
             if (!wasCollected && bonusSystem != null)
             {
+                if (collectSound != null)
+                    collectSound.Play();
                 wasCollected = true;
                 bonusSystem.OnBonusCollected(collision.gameObject, bonusType);
                 Destroy(gameObject);

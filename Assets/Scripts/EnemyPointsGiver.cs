@@ -16,12 +16,19 @@ public class EnemyPointsGiver : MonoBehaviour
     {
         SceneManager.sceneLoaded += (scene, mode) =>
         {
+            bool isRespawn = PlayerPrefs.GetInt("RespawnActive", 0) == 1;
+            PlayerPrefs.SetInt("RespawnActive", 0); // Сбрасываем флаг сразу после проверки
+            PlayerPrefs.Save();
+
             if (scene.name == "Game")
             {
-                totalKills = 0;
-                PlayerPrefs.SetInt(KILLS_KEY, 0);
-                PlayerPrefs.Save();
-                // Обновляем UI после сброса
+                if (!isRespawn)
+                {
+                    totalKills = 0;
+                    PlayerPrefs.SetInt(KILLS_KEY, 0);
+                    PlayerPrefs.Save();
+                }
+                // Обновляем UI после сброса или сохранения
                 var killDisplay = Object.FindObjectOfType<KillCountDisplay>();
                 if (killDisplay != null) killDisplay.Refresh();
             }
@@ -94,6 +101,15 @@ public class EnemyPointsGiver : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             KillEnemy();
+        }
+        
+        if (collision.gameObject.CompareTag("Respawn"))
+        {
+            var healthSystem = FindObjectOfType<HealthSystem>();
+            if (healthSystem != null)
+            {
+                healthSystem.Die();
+            }
         }
     }
 

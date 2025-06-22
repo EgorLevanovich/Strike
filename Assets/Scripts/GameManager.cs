@@ -10,7 +10,6 @@ public class GameManager : MonoBehaviour
     public int currentLives;
 
     [Header("UI References")]
-   
     public Text livesText;
 
     private void Awake()
@@ -36,8 +35,6 @@ public class GameManager : MonoBehaviour
     {
         currentLives--;
         UpdateLivesUI();
-
-        
     }
 
     public void AddLife()

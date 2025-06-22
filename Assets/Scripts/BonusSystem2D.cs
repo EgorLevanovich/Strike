@@ -28,6 +28,7 @@ public class BonusSystem2D : MonoBehaviour
     [Header("Homing Effect")]
     public float homingDuration = 15f;
     public float homingSpeed = 15f;
+    public float homingRotationSpeed = 360f; // Скорость вращения мяча в градусах в секунду
     public int maxTargets = 10;
     public GameObject _Homing;
 
@@ -44,7 +45,8 @@ public class BonusSystem2D : MonoBehaviour
     private bool isDoublePointsActive = false;
     private int targetsDestroyed = 0;
     private Coroutine bonusSpawnCoroutine;
-    private bool isAnyEffectActive = false; // Флаг для отслеживания активных эффектов
+    [HideInInspector] public bool isAnyEffectActive = false; // Флаг для отслеживания активных эффектов
+    private Coroutine currentCloneEffect;
 
     [HideInInspector] public bool spawnBonusInNextWave = false;
     [HideInInspector] public int bonusIndexInWave = -1;
@@ -55,6 +57,13 @@ public class BonusSystem2D : MonoBehaviour
     public GameObject referenceEnemyPrefab;
 
     [HideInInspector] public bool pendingBonusRequest = false;
+
+    private bool firstBonusSpawned = false; // Новый флаг для отслеживания первого бонуса
+
+    private List<GameObject> spawnedClones = new List<GameObject>(); // Список созданных этим скриптом клонов
+
+    [Header("Audio")]
+    public AudioSource bonusActivateAudio; // Аудио для активации бонуса
 
     private void Start()
     {
@@ -106,13 +115,25 @@ public class BonusSystem2D : MonoBehaviour
         float cumulative = 0;
         BonusType bonusType = BonusType.CloneBall;
 
-        for (int i = 0; i < bonusChances.Length; i++)
+        // Если это первый бонус — не даём Homing (индекс 1)
+        int[] allowedFirstBonuses = new int[] { 0, 2 }; // 0 - CloneBall, 2 - DoublePoints
+        if (!firstBonusSpawned)
         {
-            cumulative += bonusChances[i];
-            if (randomValue <= cumulative)
+            // Выбираем только из разрешённых
+            int idx = allowedFirstBonuses[Random.Range(0, allowedFirstBonuses.Length)];
+            bonusType = (BonusType)idx;
+            firstBonusSpawned = true;
+        }
+        else
+        {
+            for (int i = 0; i < bonusChances.Length; i++)
             {
-                bonusType = (BonusType)i;
-                break;
+                cumulative += bonusChances[i];
+                if (randomValue <= cumulative)
+                {
+                    bonusType = (BonusType)i;
+                    break;
+                }
             }
         }
 
@@ -194,6 +215,10 @@ public class BonusSystem2D : MonoBehaviour
         Destroy(currentBonus);
         currentBonus = null;
 
+        // Воспроизводим звук активации бонуса
+        if (bonusActivateAudio != null)
+            bonusActivateAudio.Play();
+
         // Устанавливаем флаг активного эффекта
         isAnyEffectActive = true;
 
@@ -228,13 +253,23 @@ public class BonusSystem2D : MonoBehaviour
             return;
         }
 
-        newBall.tag = "Ball";
+        newBall.tag = "CloneBall";
         newBall.transform.localScale = originalBall.transform.localScale;
 
         Rigidbody2D origRb = originalBall.GetComponent<Rigidbody2D>();
         Rigidbody2D cloneRb = newBall.GetComponent<Rigidbody2D>();
         if (origRb != null && cloneRb != null)
-            cloneRb.velocity = origRb.velocity;
+        {
+            float speed = origRb.velocity.magnitude;
+            if (speed < 1f) speed = 10f;
+            Vector2 direction = Random.insideUnitCircle.normalized;
+            origRb.velocity = direction * speed;
+            cloneRb.velocity = -direction * speed;
+        }
+
+        spawnedClones.Add(newBall); // Добавляем клон в список
+
+        StartCloneEffect(cloneDuration);
 
         StartCoroutine(WaitForCloneEffect(cloneDuration));
         Destroy(newBall, cloneDuration);
@@ -260,7 +295,10 @@ public class BonusSystem2D : MonoBehaviour
         if (_Homing != null)
             _Homing.SetActive(true);
         if (bonusTimerText != null)
+        {
             bonusTimerText.gameObject.SetActive(true);
+            bonusTimerText.text = homingDuration.ToString("F1"); // Показываем время с одним знаком после запятой
+        }
 
         Rigidbody2D ballRb = ball.GetComponent<Rigidbody2D>();
         if (ballRb == null)
@@ -271,17 +309,46 @@ public class BonusSystem2D : MonoBehaviour
         }
 
         float startTime = Time.time;
+        float endTime = startTime + homingDuration;
         Vector2 originalVelocity = ballRb.velocity;
         float originalSpeed = originalVelocity.magnitude;
+        float originalAngularVelocity = ballRb.angularVelocity; // Сохраняем оригинальное вращение
         float destroyRadius = 1f;
 
-        while (Time.time - startTime < homingDuration && targetsDestroyed < maxTargets)
+        // Проверяем, является ли этот мяч мячом с индексом 10
+        bool shouldRotate = false;
+        
+        // Находим BallSkinLoader и проверяем, какой мяч активен
+        BallSkinLoader ballLoader = FindObjectOfType<BallSkinLoader>();
+        if (ballLoader != null && ballLoader.ballPrefabs != null && ballLoader.ballPrefabs.Length > 10)
         {
-            float timeLeft = Mathf.Max(0, homingDuration - (Time.time - startTime));
+            // Проверяем, активен ли мяч с индексом 10 (11-й элемент массива)
+            if (ballLoader.ballPrefabs[10] != null && ballLoader.ballPrefabs[10].activeInHierarchy)
+            {
+                shouldRotate = true;
+                Debug.Log("[BonusSystem2D] Мяч с индексом 10 активен, включаем вращение");
+            }
+        }
+        
+        // Начинаем вращение мяча только если это мяч с индексом 10
+        if (shouldRotate)
+        {
+            ballRb.angularVelocity = homingRotationSpeed;
+        }
+
+        while (Time.time < endTime && targetsDestroyed < maxTargets)
+        {
+            float timeLeft = endTime - Time.time;
             if (bonusTimerText != null)
-                bonusTimerText.text = $"{(int)timeLeft}";
+                bonusTimerText.text = timeLeft.ToString("F1"); // Показываем время с одним знаком после запятой
             GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
             bool destroyedAny = false;
+
+            // Поддерживаем вращение мяча с индексом 10 во время действия бонуса
+            if (shouldRotate && ballRb != null)
+            {
+                ballRb.angularVelocity = homingRotationSpeed;
+            }
 
             // Собираем всех врагов в радиусе
             List<GameObject> closeEnemies = new List<GameObject>();
@@ -307,6 +374,10 @@ public class BonusSystem2D : MonoBehaviour
             if (targetsDestroyed >= maxTargets)
             {
                 ballRb.velocity = new Vector2(0, -originalSpeed); // строго вниз
+                if (shouldRotate)
+                {
+                    ballRb.angularVelocity = originalAngularVelocity; // Восстанавливаем оригинальное вращение
+                }
                 if (_Homing != null)
                     _Homing.SetActive(false);
                 currentHomingEffect = null;
@@ -353,6 +424,10 @@ public class BonusSystem2D : MonoBehaviour
 
         // Возвращаем мяч к нормальному движению
         ballRb.velocity = originalVelocity.normalized * originalSpeed;
+        if (shouldRotate)
+        {
+            ballRb.angularVelocity = originalAngularVelocity; // Восстанавливаем оригинальное вращение
+        }
 
         if (_Homing != null)
             _Homing.SetActive(false);
@@ -375,8 +450,10 @@ public class BonusSystem2D : MonoBehaviour
     {
         Debug.Log("[BonusSystem2D] Starting Double Points effect");
         if (bonusTimerText != null)
+        {
             bonusTimerText.gameObject.SetActive(true);
-        
+            bonusTimerText.text = duration.ToString("F1"); // Показываем время с одним знаком после запятой
+        }
         if (_DoublePoints != null)
             _DoublePoints.SetActive(true);
 
@@ -387,11 +464,12 @@ public class BonusSystem2D : MonoBehaviour
         }
 
         float startTime = Time.time;
-        while (Time.time - startTime < duration)
+        float endTime = startTime + duration;
+        while (Time.time < endTime)
         {
-            float timeLeft = Mathf.Max(0, duration - (Time.time - startTime));
+            float timeLeft = endTime - Time.time;
             if (bonusTimerText != null)
-                bonusTimerText.text = $"{(int)timeLeft}";
+                bonusTimerText.text = timeLeft.ToString("F1"); // Показываем время с одним знаком после запятой
             yield return null;
         }
 
@@ -421,15 +499,29 @@ public class BonusSystem2D : MonoBehaviour
         float randomValue = Random.value;
         float cumulative = 0;
         BonusType bonusType = BonusType.CloneBall;
-        for (int i = 0; i < bonusChances.Length; i++)
+
+        // Если это первый бонус — не даём Homing (индекс 1)
+        int[] allowedFirstBonuses = new int[] { 0, 2 }; // 0 - CloneBall, 2 - DoublePoints
+        if (!firstBonusSpawned)
         {
-            cumulative += bonusChances[i];
-            if (randomValue <= cumulative)
+            // Выбираем только из разрешённых
+            int idx = allowedFirstBonuses[Random.Range(0, allowedFirstBonuses.Length)];
+            bonusType = (BonusType)idx;
+            firstBonusSpawned = true;
+        }
+        else
+        {
+            for (int i = 0; i < bonusChances.Length; i++)
             {
-                bonusType = (BonusType)i;
-                break;
+                cumulative += bonusChances[i];
+                if (randomValue <= cumulative)
+                {
+                    bonusType = (BonusType)i;
+                    break;
+                }
             }
         }
+
         currentBonus = Instantiate(bonusPrefabs[(int)bonusType], position, Quaternion.identity);
         if (referenceEnemyPrefab != null)
         {
@@ -490,15 +582,29 @@ public class BonusSystem2D : MonoBehaviour
         float randomValue = Random.value;
         float cumulative = 0;
         BonusType bonusType = BonusType.CloneBall;
-        for (int i = 0; i < bonusChances.Length; i++)
+
+        // Если это первый бонус — не даём Homing (индекс 1)
+        int[] allowedFirstBonuses = new int[] { 0, 2 }; // 0 - CloneBall, 2 - DoublePoints
+        if (!firstBonusSpawned)
         {
-            cumulative += bonusChances[i];
-            if (randomValue <= cumulative)
+            // Выбираем только из разрешённых
+            int idx = allowedFirstBonuses[Random.Range(0, allowedFirstBonuses.Length)];
+            bonusType = (BonusType)idx;
+            firstBonusSpawned = true;
+        }
+        else
+        {
+            for (int i = 0; i < bonusChances.Length; i++)
             {
-                bonusType = (BonusType)i;
-                break;
+                cumulative += bonusChances[i];
+                if (randomValue <= cumulative)
+                {
+                    bonusType = (BonusType)i;
+                    break;
+                }
             }
         }
+
         currentBonus = Instantiate(bonusPrefabs[(int)bonusType], position, Quaternion.identity);
         
         // Apply color based on bonus type
@@ -554,5 +660,91 @@ public class BonusSystem2D : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public void StartCloneEffect(float duration)
+    {
+        if (currentCloneEffect != null)
+            StopCoroutine(currentCloneEffect);
+        currentCloneEffect = StartCoroutine(RunCloneEffect(duration));
+    }
+
+    IEnumerator RunCloneEffect(float duration)
+    {
+        if (bonusTimerText != null)
+        {
+            bonusTimerText.gameObject.SetActive(true);
+            bonusTimerText.text = duration.ToString("F1"); // Показываем время с одним знаком после запятой
+        }
+        float startTime = Time.time;
+        float endTime = startTime + duration;
+        while (Time.time < endTime)
+        {
+            float timeLeft = endTime - Time.time;
+            if (bonusTimerText != null)
+                bonusTimerText.text = timeLeft.ToString("F1"); // Показываем время с одним знаком после запятой
+            yield return null;
+        }
+        if (bonusTimerText != null)
+            bonusTimerText.gameObject.SetActive(false);
+        currentCloneEffect = null;
+        isAnyEffectActive = false;
+    }
+
+    public void OnBonusMissed()
+    {
+        isBonusActive = false;
+        currentBonus = null;
+    }
+
+    public void StopAllBonuses()
+    {
+        isAnyEffectActive = false;
+        if (bonusTimerText != null)
+            bonusTimerText.gameObject.SetActive(false);
+        if (_Homing != null) _Homing.SetActive(false);
+        if (_DoublePoints != null) _DoublePoints.SetActive(false);
+        if (currentHomingEffect != null) StopCoroutine(currentHomingEffect);
+        if (currentPointsEffect != null) StopCoroutine(currentPointsEffect);
+        if (currentCloneEffect != null) StopCoroutine(currentCloneEffect);
+        currentHomingEffect = null;
+        currentPointsEffect = null;
+        currentCloneEffect = null;
+
+        // Останавливаем вращение мяча при принудительной остановке бонусов
+        GameObject activeBall = GameObject.FindGameObjectWithTag("Ball");
+        if (activeBall != null)
+        {
+            // Проверяем, является ли активный мяч мячом с индексом 10
+            bool shouldStopRotation = false;
+            
+            // Находим BallSkinLoader и проверяем, какой мяч активен
+            BallSkinLoader ballLoader = FindObjectOfType<BallSkinLoader>();
+            if (ballLoader != null && ballLoader.ballPrefabs != null && ballLoader.ballPrefabs.Length > 10)
+            {
+                // Проверяем, активен ли мяч с индексом 10 (11-й элемент массива)
+                if (ballLoader.ballPrefabs[10] != null && ballLoader.ballPrefabs[10].activeInHierarchy)
+                {
+                    shouldStopRotation = true;
+                }
+            }
+            
+            if (shouldStopRotation)
+            {
+                Rigidbody2D ballRb = activeBall.GetComponent<Rigidbody2D>();
+                if (ballRb != null)
+                {
+                    ballRb.angularVelocity = 0f; // Останавливаем вращение
+                }
+            }
+        }
+
+        // Удаляем только созданные этим скриптом клоны
+        foreach (var clone in spawnedClones)
+        {
+            if (clone != null)
+                GameObject.Destroy(clone);
+        }
+        spawnedClones.Clear();
     }
 }

@@ -1,8 +1,10 @@
+using Assets.Scripts.Gameplay;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UniversalMapSkinButton : MonoBehaviour
 {
+    [SerializeField] private string _name;
     public int skinIndex;
     public int price;
     public Button buyButton;
@@ -11,6 +13,7 @@ public class UniversalMapSkinButton : MonoBehaviour
     public Image mapPreviewImage;
     public SpriteRenderer mapPreviewRenderer;
     public AudioSource purchaseSound;
+    public AudioSource selectSound;
 
     private bool wasBought;
     private bool isSelected;
@@ -68,9 +71,13 @@ public class UniversalMapSkinButton : MonoBehaviour
     {
         if (!wasBought) return;
 
+        if (selectSound != null) selectSound.Play();
+
         PlayerPrefs.SetInt("SelectedMap", skinIndex);
         PlayerPrefs.Save();
-        
+
+        FindObjectOfType<MenuMapLoader>()?.ReloadMenuMap();
+
         isSelected = true;
         UpdateButtonState();
         
@@ -80,6 +87,8 @@ public class UniversalMapSkinButton : MonoBehaviour
             button.isSelected = PlayerPrefs.GetInt("SelectedMap", -1) == button.skinIndex;
             button.UpdateButtonState();
         }
+
+        GameplayContainer.Instance.LevelName = _name;
     }
 
     public void UpdateButtonState()
@@ -90,7 +99,12 @@ public class UniversalMapSkinButton : MonoBehaviour
         if (!wasBought)
         {
             if (buyButton != null) buyButton.gameObject.SetActive(true);
-            if (selectButton != null) selectButton.gameObject.SetActive(false);
+            if (selectButton != null)
+            {
+                selectButton.onClick.RemoveAllListeners();
+                selectButton.onClick.AddListener(SelectSkin);
+                selectButton.gameObject.SetActive(false);
+            }
             if (checkmark != null) checkmark.SetActive(false);
             int points = PlayerPrefs.GetInt("AllTimeKills", 0);
             if (buyButton != null) buyButton.interactable = points >= price;
@@ -110,19 +124,19 @@ public class UniversalMapSkinButton : MonoBehaviour
         else
         {
             if (buyButton != null) buyButton.gameObject.SetActive(false);
-
+            if (selectButton != null)
+            {
+                selectButton.onClick.RemoveAllListeners();
+                selectButton.onClick.AddListener(SelectSkin);
+                selectButton.gameObject.SetActive(!isSelected);
+                selectButton.interactable = true;
+            }
             if (isSelected)
             {
-                if (selectButton != null) selectButton.gameObject.SetActive(false);
                 if (checkmark != null) checkmark.SetActive(true);
             }
             else
             {
-                if (selectButton != null)
-                {
-                    selectButton.gameObject.SetActive(true);
-                    selectButton.interactable = true;
-                }
                 if (checkmark != null) checkmark.SetActive(false);
             }
             if (mapPreviewRenderer != null)

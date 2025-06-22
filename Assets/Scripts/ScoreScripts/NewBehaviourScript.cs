@@ -13,9 +13,10 @@ public class NewBehaviourScript : MonoBehaviour
     private const string HIGH_SCORE_KEY = "HighScore";
     private const string TOTAL_SCORE_KEY = "TotalScore";
     private const string POINTS_KEY = "Points";
+    private const string LEVEL_KEY = "LevelCount";
     private int points = 0; // Количество поинтов за каждые 100 киллов
     private int lastPointsSessionBalls = 0; // Для отслеживания следующей сотни
-
+    public int LevelCount {  get; private set; }
     private void Awake()
     {
         if (Instance == null)
@@ -24,6 +25,7 @@ public class NewBehaviourScript : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             LoadTotalScore();
             LoadPoints();
+            LoadLevelCount();
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
         else
@@ -63,6 +65,18 @@ public class NewBehaviourScript : MonoBehaviour
         points = PlayerPrefs.GetInt(POINTS_KEY, 0);
     }
 
+    private void LoadLevelCount()
+    {
+        LevelCount = PlayerPrefs.GetInt(LEVEL_KEY, 0);
+    }
+
+    public void SaveLevelCount()
+    {
+        LevelCount++;
+        PlayerPrefs.SetInt(LEVEL_KEY, LevelCount);
+        PlayerPrefs.Save();
+        
+    }
     private void SavePoints()
     {
         PlayerPrefs.SetInt(POINTS_KEY, points);

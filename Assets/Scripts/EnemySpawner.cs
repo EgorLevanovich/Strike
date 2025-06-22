@@ -30,7 +30,26 @@ public class EnemySpawner : MonoBehaviour
     {
         while (true)
         {
-            isNewWave = true; // Перед каждой волной отмечаем, что это новая волна
+            isNewWave = true;
+            SpawnLine();
+            yield return new WaitForSeconds(spawnInterval);
+        }
+    }
+
+    public void StartSpawningOnRespawn()
+    {
+        StopAllCoroutines(); // Останавливаем все корутины спавнера
+        StartCoroutine(ContinuousSpawningAfterRespawn());
+    }
+
+    private IEnumerator ContinuousSpawningAfterRespawn()
+    {
+        // Первая задержка после респавна
+        yield return new WaitForSeconds(spawnInterval);
+
+        while (true)
+        {
+            isNewWave = true;
             SpawnLine();
             yield return new WaitForSeconds(spawnInterval);
         }

@@ -9,6 +9,7 @@ public class Money : MonoBehaviour
     public static Money Instance { get; private set; }
     public int Coins { get; private set; }
     public Text cointsText;
+    public Text[] coinsTexts;
     private const string CoinsKey = "PlayerCoins";
     private void Awake()
     {
@@ -35,6 +36,14 @@ public class Money : MonoBehaviour
     {
         if (cointsText != null)
             cointsText.text = ":" + Coins;
+        if (coinsTexts != null)
+        {
+            foreach (var t in coinsTexts)
+            {
+                if (t != null)
+                    t.text = ":" + Coins;
+            }
+        }
     }
 
     private void SaveCoins()

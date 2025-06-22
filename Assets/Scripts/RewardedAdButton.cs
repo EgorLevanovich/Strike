@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 using UnityEngine.Advertisements;
 using UnityEngine.UI;
@@ -102,4 +103,5 @@ public class RewardedAdButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsS
         Debug.LogError($"[ADS] Failed to load ad: {placementId}, error: {error}, message: {message}");
         if (deathMenu != null) deathMenu.SetActive(true);
     }
-} 
+}
+*/ 

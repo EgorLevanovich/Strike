@@ -5,6 +5,9 @@ using System;
 public class GameSoundSlider : MonoBehaviour
 {
     public Slider gameSoundSlider;
+    public AudioSource extraSource1;
+    public AudioSource extraSource2;
+    public AudioSource extraSource3;
     private const string GAME_SOUND_VOLUME_KEY = "GameSoundVolume"; // Уникальный ключ для звуков игры
     
     // Событие для оповещения об изменении громкости
@@ -38,6 +41,14 @@ public class GameSoundSlider : MonoBehaviour
         {
             controller.SetVolume(volume);
         }
+
+        // Управляем двумя дополнительными источниками звука
+        if (extraSource1 != null)
+            extraSource1.volume = volume;
+        if (extraSource2 != null)
+            extraSource2.volume = volume;
+        if (extraSource3 != null)
+            extraSource3.volume = volume;
     }
 
     void OnDestroy()

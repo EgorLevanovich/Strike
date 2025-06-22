@@ -1,8 +1,10 @@
+using Assets.Scripts.Gameplay;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UniversalPlatformSkinButton : MonoBehaviour
 {
+    [SerializeField] private string _name;
     public int skinIndex;
     public int price;
     public Button buyButton;
@@ -11,6 +13,7 @@ public class UniversalPlatformSkinButton : MonoBehaviour
     public Image platformPreviewImage;
     public SpriteRenderer platformPreviewRenderer;
     public AudioSource purchaseSound;
+    public AudioSource selectSound;
 
     private bool wasBought;
     private bool isSelected;
@@ -68,6 +71,8 @@ public class UniversalPlatformSkinButton : MonoBehaviour
     {
         if (!wasBought) return;
 
+        if (selectSound != null) selectSound.Play();
+
         PlayerPrefs.SetInt("SelectedPlatform", skinIndex);
         PlayerPrefs.Save();
         
@@ -80,6 +85,8 @@ public class UniversalPlatformSkinButton : MonoBehaviour
             button.isSelected = PlayerPrefs.GetInt("SelectedPlatform", -1) == button.skinIndex;
             button.UpdateButtonState();
         }
+
+        GameplayContainer.Instance.PlatformName = _name;
     }
 
     public void UpdateButtonState()
@@ -90,7 +97,12 @@ public class UniversalPlatformSkinButton : MonoBehaviour
         if (!wasBought)
         {
             if (buyButton != null) buyButton.gameObject.SetActive(true);
-            if (selectButton != null) selectButton.gameObject.SetActive(false);
+            if (selectButton != null)
+            {
+                selectButton.onClick.RemoveAllListeners();
+                selectButton.onClick.AddListener(SelectSkin);
+                selectButton.gameObject.SetActive(false);
+            }
             if (checkmark != null) checkmark.SetActive(false);
             int points = PlayerPrefs.GetInt("AllTimeKills", 0);
             if (buyButton != null) buyButton.interactable = points >= price;
@@ -110,19 +122,19 @@ public class UniversalPlatformSkinButton : MonoBehaviour
         else
         {
             if (buyButton != null) buyButton.gameObject.SetActive(false);
-
+            if (selectButton != null)
+            {
+                selectButton.onClick.RemoveAllListeners();
+                selectButton.onClick.AddListener(SelectSkin);
+                selectButton.gameObject.SetActive(!isSelected);
+                selectButton.interactable = true;
+            }
             if (isSelected)
             {
-                if (selectButton != null) selectButton.gameObject.SetActive(false);
                 if (checkmark != null) checkmark.SetActive(true);
             }
             else
             {
-                if (selectButton != null)
-                {
-                    selectButton.gameObject.SetActive(true);
-                    selectButton.interactable = true;
-                }
                 if (checkmark != null) checkmark.SetActive(false);
             }
             if (platformPreviewRenderer != null)

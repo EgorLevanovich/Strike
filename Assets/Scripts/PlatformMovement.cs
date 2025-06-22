@@ -6,29 +6,23 @@ public class PlatformMovement : MonoBehaviour
 {
     public float _speed = 10f;
     public Rigidbody2D _rb;
-    [SerializeField] private Rigidbody2D[] _players;
+    [SerializeField] public Rigidbody2D[] _players;
     private Vector3 _mouseOffset;
     private bool _isDragging = false;
     private float fixedY;
     [SerializeField] private float minX = -387f;
     [SerializeField] private float maxX = 1087f;
     private Vector2 _targetPosition;
-    private Collider2D _platformCollider;
+    private bool _mouseHeld = false;
+    private Vector3 _lastMousePosition;
+    private float _dragThreshold = 0.01f; // Минимальное смещение для старта движения
+    private Vector2 _touchStartPos;
+    private bool _touchHeld = false;
+    private bool _touchDragging = false;
 
     void Start()
     {
         fixedY = transform.position.y;
-        _platformCollider = GetComponent<Collider2D>();
-        if (_platformCollider == null)
-        {
-            Debug.LogError("На платформе отсутствует коллайдер!");
-        }
-        else
-        {
-            Debug.Log($"Тип коллайдера платформы: {_platformCollider.GetType().Name}");
-            Debug.Log($"Размер коллайдера: {_platformCollider.bounds.size}");
-        }
-
         int index = PlayerPrefs.GetInt(PlayerSelect.SkinKey);
         for (int i = 0; i < _players.Length; i++)
         {
@@ -46,56 +40,99 @@ public class PlatformMovement : MonoBehaviour
 
     void OnMouseDown()
     {
-        Vector3 mouseWorldPos = GetMouseWorldPos();
-        Debug.Log($"Нажатие на позицию: {mouseWorldPos}");
-        Debug.Log($"Позиция платформы: {transform.position}");
-        Debug.Log($"Границы коллайдера: {_platformCollider.bounds}");
-
-        if (_platformCollider != null && _platformCollider.OverlapPoint(mouseWorldPos))
-        {
-            Debug.Log("Нажатие внутри коллайдера");
-            _isDragging = true;
-            _mouseOffset = transform.position - mouseWorldPos;
-            _mouseOffset.y = 0;
-        }
-        else
-        {
-            Debug.Log("Нажатие вне коллайдера");
-        }
+        _mouseHeld = true;
+        _lastMousePosition = Input.mousePosition;
+        _isDragging = false;
+        _mouseOffset = transform.position - Camera.main.ScreenToWorldPoint(Input.mousePosition);
     }
 
     void OnMouseUp()
     {
+        _mouseHeld = false;
         _isDragging = false;
     }
 
+#if UNITY_ANDROID || UNITY_IOS
     void Update()
     {
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            Vector3 touchWorldPos = Camera.main.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, 0));
+            touchWorldPos.z = 0;
+            if (touch.phase == TouchPhase.Began)
+            {
+                Collider2D col = GetComponent<Collider2D>();
+                if (col != null && col.OverlapPoint(touchWorldPos))
+                {
+                    _touchHeld = true;
+                    _touchDragging = false;
+                    _touchStartPos = touch.position;
+                }
+            }
+            if (_touchHeld)
+            {
+                if (!_touchDragging)
+                {
+                    if ((touch.position - _touchStartPos).sqrMagnitude > 10f) // Порог в пикселях
+                    {
+                        _touchDragging = true;
+                    }
+                }
+                if (_touchDragging)
+                {
+                    float clampedX = Mathf.Clamp(touchWorldPos.x, minX, maxX);
+                    _targetPosition = new Vector2(clampedX, fixedY);
+                }
+            }
+            if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+            {
+                _touchHeld = false;
+                _touchDragging = false;
+            }
+        }
+        else
+        {
+            _touchHeld = false;
+            _touchDragging = false;
+        }
+    }
+#else
+    void Update()
+    {
+        if (_mouseHeld)
+        {
+            if (!_isDragging)
+            {
+                if ((Input.mousePosition - _lastMousePosition).sqrMagnitude > _dragThreshold * _dragThreshold)
+                {
+                    _isDragging = true;
+                }
+            }
+            if (_isDragging)
+            {
+                Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + _mouseOffset;
+                mouseWorldPos.z = 0;
+                float clampedX = Mathf.Clamp(mouseWorldPos.x, minX, maxX);
+                _targetPosition = new Vector2(clampedX, fixedY);
+            }
+        }
+    }
+#endif
+
+    void FixedUpdate()
+    {
+#if UNITY_ANDROID || UNITY_IOS
+        if (_touchDragging)
+        {
+            _rb.MovePosition(_targetPosition);
+        }
+#else
         if (_isDragging)
         {
-            Vector3 newPosition = GetMouseWorldPos() + _mouseOffset;
-            newPosition = new Vector3(
-                Mathf.Clamp(newPosition.x, minX, maxX),
-                fixedY,
-                transform.position.z
-            );
-            _rb.position = new Vector2(newPosition.x, newPosition.y);
+            _rb.MovePosition(_targetPosition);
         }
-    }
-
-    private Vector3 GetMouseWorldPos()
-    {
-        Vector3 mousePoint = Input.mousePosition;
-        mousePoint.z = 0;
-        return Camera.main.ScreenToWorldPoint(mousePoint);
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground") && gameObject.CompareTag("Player"))
-        {
-            Destroy(gameObject);
-        }
+#endif
     }
 }
 

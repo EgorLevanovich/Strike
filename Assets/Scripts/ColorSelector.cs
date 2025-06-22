@@ -28,25 +28,73 @@ public class ColorSelector : MonoBehaviour
 
     private void CreateBorder()
     {
-        // Создаем новый GameObject для рамки
-        borderObject = new GameObject("ColorBorder");
+        // Создаем новый GameObject для галочки
+        borderObject = new GameObject("ColorCheckmark");
         borderObject.transform.SetParent(transform);
         borderObject.transform.SetAsFirstSibling();
 
-        // Настраиваем RectTransform для рамки
-        RectTransform borderRect = borderObject.AddComponent<RectTransform>();
-        borderRect.anchorMin = Vector2.zero;
-        borderRect.anchorMax = Vector2.one;
-        borderRect.offsetMin = new Vector2(-5, -5); // Отступ от краев
-        borderRect.offsetMax = new Vector2(5, 5);
+        // Настраиваем RectTransform для галочки
+        RectTransform checkmarkRect = borderObject.AddComponent<RectTransform>();
+        checkmarkRect.anchorMin = new Vector2(0.5f, 0.5f);
+        checkmarkRect.anchorMax = new Vector2(0.5f, 0.5f);
+        checkmarkRect.anchoredPosition = Vector2.zero;
+        checkmarkRect.sizeDelta = new Vector2(200, 200); // Размер галочки увеличен в 10 раз
+        checkmarkRect.pivot = new Vector2(0.5f, 0.5f);
 
-        // Добавляем компонент Image для рамки
+        // Добавляем компонент Image для галочки
         borderImage = borderObject.AddComponent<Image>();
-        borderImage.color = new Color(0f, 0f, 0f, 0.8f); // Черный цвет с прозрачностью
-        borderImage.raycastTarget = false; // Отключаем взаимодействие с рамкой
+        borderImage.color = new Color(0f, 0f, 0f, 1f); // Черный цвет
+        borderImage.raycastTarget = false; // Отключаем взаимодействие с галочкой
+        
+        // Устанавливаем стандартный спрайт галочки Unity
+        borderImage.sprite = Resources.Load<Sprite>("UI/Checkmark");
+        
+        // Если стандартный спрайт не найден, создаем простую галочку
+        if (borderImage.sprite == null)
+        {
+            borderImage.sprite = CreateCheckmarkSprite();
+        }
 
-        // Скрываем рамку по умолчанию
+        // Скрываем галочку по умолчанию
         borderObject.SetActive(false);
+    }
+
+    private Sprite CreateCheckmarkSprite()
+    {
+        // Создаем простую текстуру галочки
+        int size = 32;
+        Texture2D texture = new Texture2D(size, size);
+        
+        // Заполняем прозрачным цветом
+        Color[] pixels = new Color[size * size];
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            pixels[i] = Color.clear;
+        }
+        
+        // Рисуем галочку (белые пиксели)
+        for (int x = 0; x < size; x++)
+        {
+            for (int y = 0; y < size; y++)
+            {
+                // Левая часть галочки (вертикальная линия)
+                if (x >= 8 && x <= 12 && y >= 8 && y <= 24)
+                {
+                    pixels[y * size + x] = Color.black;
+                }
+                // Правая часть галочки (горизонтальная линия)
+                else if (x >= 12 && x <= 24 && y >= 8 && y <= 12)
+                {
+                    pixels[y * size + x] = Color.black;
+                }
+            }
+        }
+        
+        texture.SetPixels(pixels);
+        texture.Apply();
+        
+        // Создаем спрайт из текстуры
+        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
     }
 
     private bool IsThisColorSelected()

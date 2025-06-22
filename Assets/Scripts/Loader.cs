@@ -1,5 +1,5 @@
+using Assets.Scripts.Gameplay;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,9 +15,48 @@ public class Loader : MonoBehaviour
     private float _loadProgress;
     private bool _isReadyToSwitch;
 
+    private string _path;
+    private GameplayContainer _container;
+
     private void Start()
     {
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
+        if (AdsInitializer.Instance != null)
+        {
+            AdsInitializer.Instance.LoadRewarded();
+            AdsInitializer.Instance.LoadInterstitial();
+        }
+
+        _path = System.IO.Path.Combine(Application.persistentDataPath, "gameplay_container");
+        var analytics = new Analytics();
+        _container = LoadContainer();
+        Debug.Log($"{nameof(LoadContainer)} skin_name={_container.PlatformName}, {_container.BallName}, {_container.LevelName}");
+        _container.Changed += OnChanged;
+ 
         StartCoroutine(LoadSceneAsync());
+
+        void OnChanged()
+        {
+            SaveContainer();
+        }
+    }
+
+    private GameplayContainer LoadContainer()
+    {
+        if(System.IO.File.Exists(_path))
+        {
+            var file = System.IO.File.ReadAllText(_path);
+            return JsonUtility.FromJson<GameplayContainer>(file);
+        }
+
+        return new GameplayContainer();
+    }
+
+    private void SaveContainer()
+    {
+        var file = JsonUtility.ToJson(_container);
+        System.IO.File.WriteAllText(_path, file);
     }
 
     private IEnumerator LoadSceneAsync()

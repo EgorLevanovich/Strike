@@ -59,6 +59,12 @@ public class BallsSkinChoose : MonoBehaviour
             PlayerPrefs.SetInt("AllTimeKills", points);
             PlayerPrefs.SetInt("BallSkinBought_" + skinIndex, 1);
             PlayerPrefs.Save();
+            
+            wasBought = true;
+            if (buyButton != null) buyButton.gameObject.SetActive(false);
+            if (selectButton != null) selectButton.gameObject.SetActive(true);
+            if (checkmark != null) checkmark.SetActive(false);
+            
             UpdateAllButtons();
         }
     }

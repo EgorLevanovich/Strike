@@ -15,6 +15,7 @@ public class ColorsSetup : MonoBehaviour
     public int price;
     public Text priceText;
     public Image coinImage;
+    [Header("Audio")] public AudioSource buySound;
 
     void Start(){
         UpdateColorButtonState();
@@ -43,6 +44,8 @@ public class ColorsSetup : MonoBehaviour
             PlayerPrefs.SetInt("ColorBought_" + colorIndex, 1);
             PlayerPrefs.Save();
             UpdateColorButtonState();
+            if (buySound != null) buySound.Play();
+            if (buyButton != null) buyButton.gameObject.SetActive(false);
             Debug.Log($"[ColorBuy] Покупка цвета: {colorIndex}, цена: {price}, осталось очков: {colorPoints}");
         }
         else

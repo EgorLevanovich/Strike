@@ -42,6 +42,11 @@ public class MenuMapLoader : MonoBehaviour
         }
     }
 
+    public void ReloadMenuMap()
+    {
+        LoadSelectedMenuMap();
+    }
+
     private bool IsMapBought(int index)
     {
         return PlayerPrefs.GetInt("MapBought_" + index, index == 0 ? 1 : 0) == 1;

@@ -194,7 +194,7 @@ public class BallManager : MonoBehaviour
         }
         if (ballIndex < ballButtons.Length && ballButtons[ballIndex] != null)
         {
-            ballButtons[ballIndex].gameObject.SetActive(true);
+            ballButtons[ballIndex].gameObject.SetActive(!balls[ballIndex].isPurchased);
             ballButtons[ballIndex].interactable = !balls[ballIndex].isPurchased;
         }
     }
@@ -209,9 +209,23 @@ public class BallManager : MonoBehaviour
 
     public void ApplyBall(int ballIndex)
     {
+        if (ballIndex < 0 || ballIndex >= balls.Count) return;
+        
         PlayerPrefs.SetInt("SelectedBall", ballIndex);
         PlayerPrefs.Save();
-        ApplyBall(ballIndex);
+        
+        // Обновляем UI только для измененного мяча
+        UpdateButtonState(ballIndex);
+        UpdateBallPreview(ballIndex);
+        
+        // Обновляем состояние кнопок выбора
+        if (selectButtons != null && ballIndex < selectButtons.Length)
+        {
+            selectButtons[ballIndex].gameObject.SetActive(false);
+        }
+        
+        // Обновляем все кнопки скинов
+        UpdateAllSkinButtons();
     }
 
     public int GetCurrentBallIndex()

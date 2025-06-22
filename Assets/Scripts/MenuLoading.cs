@@ -61,8 +61,10 @@ public class MenuLoading : MonoBehaviour
         if (NewBehaviourScript.Instance != null)
         {
             NewBehaviourScript.Instance.sessionBalls = 0;
+            NewBehaviourScript.Instance.SaveLevelCount();
+            Analytics.Instance.LevelStart(NewBehaviourScript.Instance.LevelCount);
         }
-        
+       
         
         Time.timeScale = 1.0f;
     }
