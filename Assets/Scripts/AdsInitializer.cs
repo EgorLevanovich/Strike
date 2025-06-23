@@ -55,6 +55,7 @@ public class AdsInitializer : MonoBehaviour, IUnityAdsInitializationListener, IU
         _rewardedCompletedCallback = completedCallback;
         _rewardedFailuredCallback = failuredCallback;
         Advertisement.Show(_rewardedId, this);
+        Analytics.Instance.AdsStart("rewarded");
     }
 
     public void ShowInterstitial(System.Action completedCallback, System.Action failuredCallback)
@@ -62,6 +63,7 @@ public class AdsInitializer : MonoBehaviour, IUnityAdsInitializationListener, IU
         _interstitialCompletedCallback = completedCallback;
         _interstitialFailuredCallback = failuredCallback;
         Advertisement.Show(_interstitialId, this);
+        Analytics.Instance.AdsStart("interstitial");
     }
 
     public void ShowInterstitial()
@@ -92,6 +94,7 @@ public class AdsInitializer : MonoBehaviour, IUnityAdsInitializationListener, IU
         {
             OnInterstitialShowFailured?.Invoke();
             _isInterstitialReady = false;
+            Analytics.Instance.AdsFail("interstitial");
         }
         else
         {
@@ -101,17 +104,24 @@ public class AdsInitializer : MonoBehaviour, IUnityAdsInitializationListener, IU
             OnRewardedShowFailured?.Invoke();
             if (placementId == _rewardedId)
                 _isRewardedReady = false;
+            
+            Analytics.Instance.AdsFail("rewarded");
         }
     }
 
     public void OnUnityAdsShowStart(string placementId)
     {
         Debug.Log($"{nameof(OnUnityAdsShowStart)}");
+
+        var type = placementId == _interstitialId ? "interstitial" : "rewarded";
+        Analytics.Instance.AdsWatch(type);
     }
 
     public void OnUnityAdsShowClick(string placementId)
     {
         Debug.Log($"{nameof(OnUnityAdsShowClick)}");
+        var type = placementId == _interstitialId ? "interstitial" : "rewarded";
+        Analytics.Instance.AdsClicked(type);
     }
 
     public void OnUnityAdsShowComplete(string placementId, UnityAdsShowCompletionState showCompletionState)

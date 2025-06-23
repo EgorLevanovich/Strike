@@ -34,7 +34,10 @@ public class BallBounce : MonoBehaviour
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _rigidbody2D.velocity = new Vector2(0f,-_speed);
-        _respawnButton.onClick.AddListener(OnRespawnRequested);
+        
+        if(_respawnButton != null)
+            _respawnButton.onClick.AddListener(OnRespawnRequested);
+        
         SetRespawnButtonState();
     }
 
@@ -65,6 +68,18 @@ public class BallBounce : MonoBehaviour
             Vector2 normal = collision.contacts[0].normal;
             _rigidbody2D.velocity = Vector2.Reflect(_rigidbody2D.velocity, normal);
             _rigidbody2D.velocity += new Vector2(normal.x * _sideBounce, 0f);
+
+            var velocity = _rigidbody2D.velocity;
+            if (velocity.x < 0 || Mathf.Approximately(_rigidbody2D.velocity.x, 0))
+            {
+                const int dumperValue = 15;
+                
+                var wallPosition = collision.transform.position;
+                var dumper = wallPosition.x < 0 ? dumperValue : -dumperValue;
+                var newVelocity = new Vector2(_rigidbody2D.velocity.x + dumper, _rigidbody2D.velocity.y);
+                _rigidbody2D.velocity = newVelocity;
+            }
+            
             if (bounceAudio != null) bounceAudio.Play();
         }
         else if (collision.gameObject.CompareTag("Enemy"))
@@ -110,15 +125,6 @@ public class BallBounce : MonoBehaviour
         yield return new WaitForFixedUpdate();
         _rigidbody2D.velocity = v;
         _rigidbody2D.angularVelocity = 0f;
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        if (_rigidbody2D != null && this.enabled)
-        {
-            Debug.Log($"BallBounce FixedUpdate: Position = {transform.position}, Velocity = {_rigidbody2D.velocity}");
-        }
     }
 
     private void OnRespawnRequested()

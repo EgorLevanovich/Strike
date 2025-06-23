@@ -1,3 +1,4 @@
+using Assets.Scripts.Gameplay;
 using UnityEngine;
 
 public class GameMapLoader : MonoBehaviour
@@ -6,9 +7,19 @@ public class GameMapLoader : MonoBehaviour
     private const string MAP_SELECTED_KEY = "MapsSelected";
     private int currentMenuMapIndex = 0;
 
-    void Start()
+    private void Start()
     {
+        var maps = FindObjectsByType<GameMapLoader>(FindObjectsSortMode.None);
+        Debug.Log($"Kek: maps={maps.Length}");
+        foreach (var map in maps)
+        {
+            Debug.Log($"Kek: map={map.name}", map);
+        }
+        
         LoadSelectedMap();
+
+        GameplayContainer.Instance.LevelCount++;
+        Analytics.Instance.LevelStart();
     }
 
     private void LoadSelectedMap()

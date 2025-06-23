@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -57,6 +58,7 @@ public class Pause : MonoBehaviour
     public void ResetGame()
     {
         SceneManager.LoadScene("Game");
+        Analytics.Instance.LevelFinish("restart");
         Time.timeScale = 1;
         if (pauseButtonCanvasGroup != null)
         {
@@ -66,8 +68,13 @@ public class Pause : MonoBehaviour
         }
     }
 
-    public void exit()
+    public void Exit()
     {
+        var health = Object.FindObjectsByType<HealthSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        
+        var result = health.Any(any=> any.IsDead) ? "lose" : "closed";
+        Analytics.Instance.LevelFinish(result);
+        
         SceneManager.LoadScene("Menu");
         Time.timeScale = 1;
     }

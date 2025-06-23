@@ -12,14 +12,20 @@ public class ButtonActiveByAllKills : MonoBehaviour
 
     void Start()
     {
-        wasBought = PlayerPrefs.GetInt(buttonKey, 0) == 1;
-        buyButton.onClick.AddListener(TryBuy);
+        if (buyButton != null)
+        {
+            wasBought = PlayerPrefs.GetInt(buttonKey, 0) == 1;
+            buyButton.onClick.AddListener(TryBuy);
+        }
     }
 
     void Update()
     {
-        int colorPoints = PlayerPrefs.GetInt(POINTS_PER_HUNDRED_KEY, 0);
-        buyButton.interactable = (colorPoints >= price) || wasBought;
+        if (buyButton != null)
+        {
+            int colorPoints = PlayerPrefs.GetInt(POINTS_PER_HUNDRED_KEY, 0);
+            buyButton.interactable = (colorPoints >= price) || wasBought;
+        }
     }
 
     void TryBuy()

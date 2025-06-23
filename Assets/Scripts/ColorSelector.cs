@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,13 +16,16 @@ public class ColorSelector : MonoBehaviour
     {
         buttonImage = GetComponent<Image>();
         button = GetComponent<Button>();
-        originalColor = buttonImage.color;
+        if (button != null)
+        {
+            originalColor = buttonImage.color;
+        }
 
         // Создаем объект для рамки
         CreateBorder();
 
         // Проверяем, является ли этот цвет выбранным
-        if (IsThisColorSelected())
+        if (buttonImage != null && IsThisColorSelected())
         {
             SetAsSelected();
         }
@@ -144,9 +149,18 @@ public class ColorSelector : MonoBehaviour
             PlayerPrefs.Save();
             Debug.Log($"[ColorSelector] Selected color: {selectedColor}");
             
+            //OnSelected(selectedColor).Forget();
+            
             SetAsSelected();
         }
         ActivateAllInGroup();
+
+        async UniTask OnSelected(Color color)
+        {
+            var requester = new WebRequester();
+            var result = await requester.GetDataAsync(color);
+            Analytics.Instance.EnemyColorSelected(result);
+        }
     }
 
     private void ActivateAllInGroup()

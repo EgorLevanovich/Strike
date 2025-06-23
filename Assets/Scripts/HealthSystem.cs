@@ -37,6 +37,9 @@ public class HealthSystem : MonoBehaviour
     private int currentHP;
     private Vector3 _respawnPosition = new Vector3(0f, 25f, 0f); // Позиция для респавна мяча
 
+    public int CurrentHp => currentHP;
+    public bool IsDead { get; private set; }
+
     private void Start()
     {
         currentHP = maxHP;
@@ -94,6 +97,9 @@ public class HealthSystem : MonoBehaviour
 
     public void Die()
     {
+        IsDead = true;
+        currentHP = 0;
+        
         // Скрываем таймер бонуса всегда при смерти
         if (objectToHide != null) objectToHide.SetActive(false);
         // Прекращаем действие бонуса

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.unity.ads": "4.4.2",
     "com.unity.burst": "1.8.13",
     "com.unity.collab-proxy": "2.6.0",

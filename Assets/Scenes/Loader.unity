@@ -702,7 +702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetSceneName: Menu
-  _minLoadDuration: 5
+  _minLoadDuration: 1
   _progressBar: {fileID: 1300451400}
 --- !u!4 &830868339
 Transform:

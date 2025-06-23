@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-
 
 public class BallSelectt : MonoBehaviour
 {
@@ -14,17 +10,17 @@ public class BallSelectt : MonoBehaviour
     {
         // �������� ������ ���������� �����
         index = PlayerPrefs.GetInt("SelectedBall");
-        for (int i = 0; i < characters.Length; i++)
+
+        if (characters != null)
         {
-            characters[i].SetActive(i == index);
+            for (int i = 0; i < characters.Length; i++)
+            {
+                if(characters[i] != null)
+                    characters[i].SetActive(i == index);
+            }
+            
+            if(_player != null)
+                _player = characters[index];
         }
-
-        //     
-        _player = characters[index];
-    }
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

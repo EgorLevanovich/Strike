@@ -87,6 +87,7 @@ public class UniversalPlatformSkinButton : MonoBehaviour
         }
 
         GameplayContainer.Instance.PlatformName = _name;
+        Analytics.Instance.PlatformSelected(_name);
     }
 
     public void UpdateButtonState()

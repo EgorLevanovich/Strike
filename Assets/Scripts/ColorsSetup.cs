@@ -47,6 +47,7 @@ public class ColorsSetup : MonoBehaviour
             if (buySound != null) buySound.Play();
             if (buyButton != null) buyButton.gameObject.SetActive(false);
             Debug.Log($"[ColorBuy] Покупка цвета: {colorIndex}, цена: {price}, осталось очков: {colorPoints}");
+            Analytics.Instance.EnemyColorsBought();
         }
         else
         {

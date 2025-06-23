@@ -1,9 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
+using Assets.Scripts.Gameplay;
 using UnityEngine;
 using Io.AppMetrica;
-
-
 
 public class Analytics
 {
@@ -17,7 +15,6 @@ public class Analytics
 
     private void Init()
     {
-
         var config = new AppMetricaConfig("bd3fea23-552a-4f42-8b0a-51848a21e9a2")
         {
             Logs = true,
@@ -27,16 +24,115 @@ public class Analytics
         AppMetrica.Activate(config);
     }
 
-    public void LevelStart(int level)
+    public void LevelStart()
     {
-        var data = new Dictionary<string, object>()
-        {
-            {"level_count", level}
-        };
+        var container = GameplayContainer.Instance;
+        var data = CreteLevelData();
         SendEvent("level_start", data, true);
     }
+    
+    public void LevelFinish(string result)
+    {
+        var data = CreteLevelData();
+        data.Add("result", result);
+        SendEvent("level_finish", data, true);
+    }
+    
+    public void AdsStart(string type)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "type", type }
+        };
+        SendEvent("ads_start", data);
+    }
+    
+    public void AdsFail(string type)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "type", type }
+        };
+        SendEvent("ads_fail", data);
+    }
+    
+    public void AdsWatch(string type)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "type", type }
+        };
+        SendEvent("ads_watch", data);
+    }
+    
+    public void AdsClicked(string type)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "type", type }
+        };
+        SendEvent("ads_click", data);
+    }
 
-    private void SendEvent(string eventName, Dictionary<string,object> parameters, bool sendBuffer = false)
+    public void BallSelected(string name)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "name", name }
+        };
+        
+        SendEvent("ball_select", data);
+    }
+    
+    public void PlatformSelected(string name)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "name", name }
+        };
+        
+        SendEvent("platform_select", data);
+    }
+    
+    public void MapSelected(string name)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "name", name }
+        };
+        
+        SendEvent("map_select", data);
+    }
+
+    public void EnemyColorSelected(string name)
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "name", name }
+        };
+        
+        SendEvent("enemy_color_select", data);
+    }
+    
+    public void EnemyColorsBought()
+    {
+        var data = new Dictionary<string, object>();
+        SendEvent("enemy_color_bought", data);
+    }
+
+    private IDictionary<string, object> CreteLevelData()
+    {
+        var container = GameplayContainer.Instance;
+        return new Dictionary<string, object>
+        {
+            {"level_count", container.LevelCount},
+            { "ball", container.BallName },
+            { "platform", container.PlatformName},
+            { "map", container.LevelName }
+        };
+    }
+
+    private void SendEvent(string eventName, IDictionary<string, object> parameters, bool sendBuffer = false)
     {
         var json = ToJson(parameters);
         Log(eventName, json);

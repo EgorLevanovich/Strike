@@ -4252,7 +4252,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: blue
   skinIndex: 1
-  price: 100
+  price: 0
   buyButton: {fileID: 1766528230}
   selectButton: {fileID: 1659034491}
   checkmark: {fileID: 1176002038}
@@ -4593,7 +4593,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: pizza
   skinIndex: 3
-  price: 100000
+  price: 0
   buyButton: {fileID: 678379586}
   selectButton: {fileID: 750244798}
   checkmark: {fileID: 1066309782}
@@ -5625,15 +5625,15 @@ MonoBehaviour:
     platformPreview: {fileID: 7005358881240253013, guid: 249b3265dbc7e7142a4b5b9986c32e17, type: 3}
     isPurchased: 1
   - platformName: Submarine
-    price: 30000
+    price: 0
     platformPreview: {fileID: 3310002292416464744, guid: 2e5b0f2a51a986d438227b8b9d8b28e1, type: 3}
     isPurchased: 0
   - platformName: Donut
-    price: 70000
+    price: 0
     platformPreview: {fileID: -1044913456359621732, guid: cd4363165491ac9409976b1b151685b1, type: 3}
     isPurchased: 0
   - platformName: Pizza
-    price: 100000
+    price: 0
     platformPreview: {fileID: 7336512567325819385, guid: ab0e0bbac6750584ca790c960ddbfb53, type: 3}
     isPurchased: 0
   platformButtons:
@@ -9710,7 +9710,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: halloween
   skinIndex: 5
-  price: 1000
+  price: 0
   buyButton: {fileID: 554940494}
   selectButton: {fileID: 1126645014}
   checkmark: {fileID: 1034856377}
@@ -10226,7 +10226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: cheese
   skinIndex: 7
-  price: 1000
+  price: 0
   buyButton: {fileID: 1070465283}
   selectButton: {fileID: 1004638293}
   checkmark: {fileID: 904574772}
@@ -11176,19 +11176,19 @@ MonoBehaviour:
     mapPreview: {fileID: 5623958337526043089, guid: 7f66f8e66edf5554da5c41fbb12802ef, type: 3}
     isPurchased: 1
   - mapName: Village
-    price: 100
+    price: 0
     mapPreview: {fileID: -2787724177592771485, guid: 521bad89506110d41ba994a3d6111589, type: 3}
     isPurchased: 0
   - mapName: Oasis
-    price: 100
+    price: 0
     mapPreview: {fileID: -2430680128724228433, guid: 6602212918aa1d24b85a3388ab9d448e, type: 3}
     isPurchased: 0
   - mapName: Winter
-    price: 1000
+    price: 0
     mapPreview: {fileID: -4362199141845447574, guid: 163c8ee998f4feb4c8b78a60dc2dbe00, type: 3}
     isPurchased: 0
   - mapName: Water
-    price: 1000
+    price: 0
     mapPreview: {fileID: 4829308660553644560, guid: 36df6fe7d7503da4899765830ce17087, type: 3}
     isPurchased: 0
   - mapName: HalloWeen
@@ -11557,7 +11557,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: lava
   skinIndex: 9
-  price: 10000
+  price: 0
   buyButton: {fileID: 762828918}
   selectButton: {fileID: 1392987377}
   checkmark: {fileID: 748142812}
@@ -11669,7 +11669,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: green_walley
   skinIndex: 8
-  price: 1000
+  price: 0
   buyButton: {fileID: 630408871}
   selectButton: {fileID: 1972873800}
   checkmark: {fileID: 1558095585}
@@ -12445,7 +12445,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: trees
   skinIndex: 6
-  price: 1000
+  price: 0
   buyButton: {fileID: 1936513269}
   selectButton: {fileID: 41173960}
   checkmark: {fileID: 180286079}
@@ -12810,7 +12810,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: red
   skinIndex: 2
-  price: 100
+  price: 0
   buyButton: {fileID: 1179860167}
   selectButton: {fileID: 1386088369}
   checkmark: {fileID: 501956117}
@@ -15234,7 +15234,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: oasis
   skinIndex: 2
-  price: 100
+  price: 0
   buyButton: {fileID: 1549853438}
   selectButton: {fileID: 1579313783}
   checkmark: {fileID: 1137904545}
@@ -25631,7 +25631,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: water
   skinIndex: 4
-  price: 1000
+  price: 0
   buyButton: {fileID: 264000405}
   selectButton: {fileID: 761155079}
   checkmark: {fileID: 1570632751}
@@ -27583,7 +27583,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: jungle
   skinIndex: 9
-  price: 1000
+  price: 0
   buyButton: {fileID: 490451032}
   selectButton: {fileID: 492555949}
   checkmark: {fileID: 187875212}
@@ -29627,7 +29627,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: donut
   skinIndex: 2
-  price: 70000
+  price: 0
   buyButton: {fileID: 1414056468}
   selectButton: {fileID: 835971575}
   checkmark: {fileID: 1125334758}
@@ -32595,7 +32595,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: american_football
   skinIndex: 10
-  price: 20000
+  price: 0
   buyButton: {fileID: 1072446650}
   selectButton: {fileID: 1092248121}
   checkmark: {fileID: 2009219974}
@@ -32794,7 +32794,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: village
   skinIndex: 1
-  price: 100
+  price: 0
   buyButton: {fileID: 929353531}
   selectButton: {fileID: 189172351}
   checkmark: {fileID: 193527565}
@@ -34485,7 +34485,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: winter
   skinIndex: 3
-  price: 1000
+  price: 0
   buyButton: {fileID: 1475025193}
   selectButton: {fileID: 59882223}
   checkmark: {fileID: 550357225}
@@ -34629,15 +34629,15 @@ MonoBehaviour:
     ballPreview: {fileID: -1512957528668481186, guid: a38554e0471f19c48bed0384d01c1bb9, type: 3}
     isPurchased: 1
   - ballName: BlueBall
-    price: 100
+    price: 0
     ballPreview: {fileID: 5585541824801933726, guid: 039362a74bfeece46956a38474cb3c09, type: 3}
     isPurchased: 0
   - ballName: RedBall
-    price: 100
+    price: 0
     ballPreview: {fileID: -2816599727193947600, guid: b8155a2c3a11da84d9dafe4ec3e5d754, type: 3}
     isPurchased: 0
   - ballName: GreenBall
-    price: 1000
+    price: 0
     ballPreview: {fileID: 6295938495301791483, guid: fd8b7fbbe878b12409ad8e64d1a9aad4, type: 3}
     isPurchased: 0
   - ballName: PinkBall
@@ -36486,7 +36486,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: submarine
   skinIndex: 1
-  price: 30000
+  price: 0
   buyButton: {fileID: 340782284}
   selectButton: {fileID: 1190189334}
   checkmark: {fileID: 2000691128}

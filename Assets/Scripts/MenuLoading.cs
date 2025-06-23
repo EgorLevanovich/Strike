@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Assets.Scripts.Gameplay;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -61,11 +62,7 @@ public class MenuLoading : MonoBehaviour
         if (NewBehaviourScript.Instance != null)
         {
             NewBehaviourScript.Instance.sessionBalls = 0;
-            NewBehaviourScript.Instance.SaveLevelCount();
-            Analytics.Instance.LevelStart(NewBehaviourScript.Instance.LevelCount);
         }
-       
-        
         Time.timeScale = 1.0f;
     }
 
@@ -79,11 +76,12 @@ public class MenuLoading : MonoBehaviour
 
     public void Exit()
     {
-        _PlayerShop.SetActive(false);
-        _buttons.SetActive(true);
-        _platformskins.SetActive(false);
-        _backgroundskins.SetActive(false);
-        _BallSkins.SetActive(false);
+        if(_PlayerShop != null) _PlayerShop.SetActive(false);
+        if(_buttons != null) _buttons.SetActive(true);
+        if(_platformskins != null) _platformskins.SetActive(false);
+        if(_backgroundskins != null) _backgroundskins.SetActive(false);
+        if(_BallSkins != null) _BallSkins.SetActive(false);
+        
         var loader = FindObjectOfType<BackGroundLoader>();
         if (loader != null) loader.LoadSelectedBackground();
     }
@@ -92,7 +90,9 @@ public class MenuLoading : MonoBehaviour
     {
         _buttons.SetActive(false);
         _PlayerShop.SetActive(true);
-        _platformskins.SetActive(true);
+        
+        if(_platformskins)
+            _platformskins.SetActive(true);
     }
 
     public void PlatformSkinsLoader()

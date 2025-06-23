@@ -89,6 +89,7 @@ public class UniversalMapSkinButton : MonoBehaviour
         }
 
         GameplayContainer.Instance.LevelName = _name;
+        Analytics.Instance.MapSelected(_name);
     }
 
     public void UpdateButtonState()

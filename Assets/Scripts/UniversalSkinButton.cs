@@ -80,6 +80,7 @@ public class UniversalSkinButton : MonoBehaviour
         needsUpdate = true;
 
         GameplayContainer.Instance.BallName = _name;
+        Analytics.Instance.BallSelected(_name);
     }
 
     public void UpdateButtonState()

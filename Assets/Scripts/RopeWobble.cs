@@ -16,9 +16,13 @@ public class RopeWobble : MonoBehaviour
 
     void Update()
     {
-        // Плавное затухание колебания
         currentWobble = Mathf.SmoothDamp(currentWobble, 0, ref wobbleVelocity, wobbleDamping);
-        rect.localRotation = Quaternion.Euler(0, 0, currentWobble);
+
+        if (rect != null)
+        {
+            rect.localRotation = Quaternion.Euler(0, 0, currentWobble);
+        }
+        
     }
 
     // Вызывайте этот метод при перелистывании карт
