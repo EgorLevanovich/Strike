@@ -99,6 +99,8 @@ public class HealthSystem : MonoBehaviour
     {
         IsDead = true;
         currentHP = 0;
+
+        EnableBalls(false);
         
         // Скрываем таймер бонуса всегда при смерти
         if (objectToHide != null) objectToHide.SetActive(false);
@@ -244,6 +246,14 @@ public class HealthSystem : MonoBehaviour
         }
     }
 
+    private void EnableBalls(bool status)
+    {
+        foreach (var ball in FindObjectsByType<BallMovement>(FindObjectsSortMode.None))
+        {
+            ball.gameObject.SetActive(status);
+        }
+    }
+
     private IEnumerator MoveActivePlatformToParentNextFrame()
     {
         yield return null; // Ждём 1 кадр для гарантии
@@ -359,7 +369,8 @@ public class HealthSystem : MonoBehaviour
                 
             }
         }
-        // Универсальное возобновление музыки карты
+       
+        EnableBalls(true);
         
         
         // Включаем физику и движение мяча

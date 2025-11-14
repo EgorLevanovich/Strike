@@ -1,5 +1,7 @@
 using Assets.Scripts.Gameplay;
 using System.Collections;
+using Cysharp.Threading.Tasks;
+using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +13,8 @@ public class Loader : MonoBehaviour
     [SerializeField] private float _minLoadDuration = 3f; // ����������� ����� �������� (��� ���������)
     [SerializeField] private Slider _progressBar; // ������������ �������� ���
 
+    [SerializeField] private GDPRService _gdprService;
+
     private AsyncOperation _loadingOperation;
     private float _loadProgress;
     private bool _isReadyToSwitch;
@@ -19,6 +23,14 @@ public class Loader : MonoBehaviour
     private GameplayContainer _container;
 
     private void Start()
+    {
+        _gdprService
+            .ShowAsync()
+            .ContinueWith(Init)
+            .Forget();
+    }
+
+    private void Init()
     {
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
@@ -31,7 +43,6 @@ public class Loader : MonoBehaviour
         _path = System.IO.Path.Combine(Application.persistentDataPath, "gameplay_container");
         var analytics = new Analytics();
         _container = LoadContainer();
-        Debug.Log($"{nameof(LoadContainer)} skin_name={_container.PlatformName}, {_container.BallName}, {_container.LevelName}");
         _container.Changed += OnChanged;
  
         StartCoroutine(LoadSceneAsync());

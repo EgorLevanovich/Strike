@@ -1,8 +1,12 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class EnemyPointsGiver : MonoBehaviour
 {
+    [SerializeField] private Collider2D _collider;
+    [SerializeField] private MMF_Player _destroyFeedbacks;
+    
     public int pointsForKill = 1; // Сколько поинтов даётся за убийство
     public static int totalKills = 0; // Общее количество убитых врагов
     private const string KILLS_KEY = "TotalKills";
@@ -51,6 +55,8 @@ public class EnemyPointsGiver : MonoBehaviour
     // Вызывай этот метод, когда враг должен быть уничтожен
     public void KillEnemy()
     {
+        _collider.enabled = false;
+        
         if (Money.Instance != null)
             Money.Instance.AddCoins(pointsForKill);
 
@@ -87,7 +93,9 @@ public class EnemyPointsGiver : MonoBehaviour
         if (deathAudio != null)
             deathAudio.Play();
 
-        Destroy(gameObject);
+        var feedbacksDuration = _destroyFeedbacks.TotalDuration;
+        _destroyFeedbacks.PlayFeedbacks();
+        Destroy(gameObject, feedbacksDuration);
     }
 
     // Уничтожаем врага и начисляем поинты при столкновении с Ball

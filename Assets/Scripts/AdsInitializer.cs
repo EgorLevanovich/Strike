@@ -42,7 +42,6 @@ public class AdsInitializer : MonoBehaviour, IUnityAdsInitializationListener, IU
     public void LoadRewarded()
     {
         Advertisement.Load(_rewardedId, this);
-        
     }
 
     public void LoadInterstitial()
