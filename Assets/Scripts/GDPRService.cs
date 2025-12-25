@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using Io.AppMetrica;
 using UnityEngine;
 using UnityEngine.Advertisements;
 using UnityEngine.UI;
