@@ -145,6 +145,26 @@ public class NewBehaviourScript : MonoBehaviour
 
     public int ScoreMultiplier => scoreMultiplier;
 
+    // Публичный метод для сохранения очков при смерти
+    public void SaveScoresOnDeath()
+    {
+        // Сохраняем текущие очки сессии в PlayerPrefs для безопасности
+        // (на случай, если игра закроется до перехода в меню)
+        PlayerPrefs.SetInt("SessionBalls", sessionBalls);
+        
+        // Проверяем и сохраняем рекорд
+        int currentHighScore = PlayerPrefs.GetInt(HIGH_SCORE_KEY, 0);
+        if (sessionBalls > currentHighScore)
+        {
+            PlayerPrefs.SetInt(HIGH_SCORE_KEY, sessionBalls);
+        }
+
+        // Сохраняем поинты
+        SavePoints();
+        
+        PlayerPrefs.Save();
+    }
+
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;

@@ -111,6 +111,13 @@ public class HealthSystem : MonoBehaviour
         // Останавливаем время
         Time.timeScale = 0f;
         
+        // Сохраняем очки сразу при появлении меню смерти
+        if (NewBehaviourScript.Instance != null)
+        {
+            NewBehaviourScript.Instance.SaveScoresOnDeath();
+        }
+        EnemyPointsGiver.SaveScoresOnDeath();
+
         // Показываем меню смерти
         if (_menu != null)
         {
@@ -331,8 +338,13 @@ public class HealthSystem : MonoBehaviour
         {
             if (obj != null) obj.SetActive(true);
         }
-        // Управляем таймером бонуса (objectToHide)
+        // Отключаем все активные эффекты бонусов после возобновления сессии за просмотр рекламы
         var bonusSystem = FindObjectOfType<BonusSystem2D>();
+        if (bonusSystem != null)
+        {
+            bonusSystem.StopAllBonuses();
+        }
+        // Управляем таймером бонуса (objectToHide)
         if (objectToHide != null)
         {
             if (bonusSystem != null && bonusSystem.isAnyEffectActive)

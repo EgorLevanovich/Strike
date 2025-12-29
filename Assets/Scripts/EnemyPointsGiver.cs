@@ -139,4 +139,20 @@ public class EnemyPointsGiver : MonoBehaviour
         if (killDisplay != null)
             killDisplay.Refresh();
     }
+
+    // Публичный метод для сохранения очков при смерти
+    public static void SaveScoresOnDeath()
+    {
+        // Сохраняем текущие убийства
+        PlayerPrefs.SetInt(KILLS_KEY, totalKills);
+        
+        // Сохраняем рекорд, если побит
+        int prevHighScore = PlayerPrefs.GetInt(HIGHSCORE_KEY, 0);
+        if (totalKills > prevHighScore)
+        {
+            PlayerPrefs.SetInt(HIGHSCORE_KEY, totalKills);
+        }
+        
+        PlayerPrefs.Save();
+    }
 } 

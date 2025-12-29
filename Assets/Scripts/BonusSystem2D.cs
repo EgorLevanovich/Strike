@@ -710,6 +710,13 @@ public class BonusSystem2D : MonoBehaviour
         currentHomingEffect = null;
         currentPointsEffect = null;
         currentCloneEffect = null;
+        
+        // Сбрасываем множитель очков
+        isDoublePointsActive = false;
+        if (NewBehaviourScript.Instance != null)
+        {
+            NewBehaviourScript.Instance.SetScoreMultiplier(1);
+        }
 
         // Останавливаем вращение мяча при принудительной остановке бонусов
         GameObject activeBall = GameObject.FindGameObjectWithTag("Ball");

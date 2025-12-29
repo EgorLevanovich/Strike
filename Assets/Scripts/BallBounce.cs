@@ -260,6 +260,13 @@ public class BallBounce : MonoBehaviour
         if (objectToHide != null)
             objectToHide.SetActive(true);
 
+        // Отключаем все активные эффекты бонусов после возобновления сессии за просмотр рекламы
+        var bonusSystem = FindObjectOfType<BonusSystem2D>();
+        if (bonusSystem != null)
+        {
+            bonusSystem.StopAllBonuses();
+        }
+
         // Активируем все объекты в _all array
         foreach (GameObject obj in _all)
         {

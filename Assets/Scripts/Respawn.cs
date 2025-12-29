@@ -84,6 +84,14 @@ public class Respawn : MonoBehaviour
             {
                 sessionPointsText2.text = EnemyPointsGiver.GetTotalKills().ToString();
             }
+            
+            // Сохраняем очки сразу при появлении меню смерти
+            if (NewBehaviourScript.Instance != null)
+            {
+                NewBehaviourScript.Instance.SaveScoresOnDeath();
+            }
+            EnemyPointsGiver.SaveScoresOnDeath();
+            
             // var adButton = FindObjectOfType<RewardedAdButton>();
             // if (adButton != null) adButton.ShowRewardButton();
             
@@ -207,6 +215,13 @@ public class Respawn : MonoBehaviour
             textToHide.SetActive(true);
         if (objectToHide != null)
             objectToHide.SetActive(true);
+
+        // Отключаем все активные эффекты бонусов после возобновления сессии за просмотр рекламы
+        var bonusSystem = FindObjectOfType<BonusSystem2D>();
+        if (bonusSystem != null)
+        {
+            bonusSystem.StopAllBonuses();
+        }
 
         // Активируем все объекты в _all array
         foreach (GameObject obj in _all)

@@ -65,6 +65,14 @@ public class DeathCollider : MonoBehaviour
             {
                 sessionPointsText2.text = EnemyPointsGiver.GetTotalKills().ToString();
             }
+            
+            // Сохраняем очки сразу при появлении меню смерти
+            if (NewBehaviourScript.Instance != null)
+            {
+                NewBehaviourScript.Instance.SaveScoresOnDeath();
+            }
+            EnemyPointsGiver.SaveScoresOnDeath();
+            
             // var adButton = FindObjectOfType<RewardedAdButton>();
         }
     }
@@ -170,6 +178,13 @@ public class DeathCollider : MonoBehaviour
             textToHide.SetActive(true);
         if (objectToHide != null)
             objectToHide.SetActive(true);
+
+        // Отключаем все активные эффекты бонусов после возобновления сессии за просмотр рекламы
+        var bonusSystem = FindObjectOfType<BonusSystem2D>();
+        if (bonusSystem != null)
+        {
+            bonusSystem.StopAllBonuses();
+        }
 
         foreach (GameObject obj in _all)
         {
