@@ -49,14 +49,21 @@ public class HealthSystem : MonoBehaviour
         if (_interstitialRespawnButton != null)
             _interstitialRespawnButton.onClick.AddListener(OnInterstitialRespawnRequested);
         SetRespawnButtonState();
-        AdsInitializer.Instance.LoadRewarded(); // Загружаем рекламу заранее
-        AdsInitializer.Instance.LoadInterstitial(); // Загружаем interstitial заранее
-        // Подписка на событие загрузки рекламы
-        if (AdsInitializer.Instance != null)
+        StartCoroutine(InitAsync());
+    }
+
+    private IEnumerator InitAsync()
+    {
+        while (AdsInitializer.Instance == null)
         {
-            AdsInitializer.Instance.OnRewardedLoaded += SetRespawnButtonState;
-            AdsInitializer.Instance.OnInterstitialLoaded += SetRespawnButtonState;
+            yield return null;
         }
+        
+        AdsInitializer.Instance.LoadRewarded();
+        AdsInitializer.Instance.LoadInterstitial();
+        
+        AdsInitializer.Instance.OnRewardedLoaded += SetRespawnButtonState;
+        AdsInitializer.Instance.OnInterstitialLoaded += SetRespawnButtonState;
     }
 
     public void SetCurrentHP(int newHP)

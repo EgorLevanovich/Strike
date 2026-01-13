@@ -1,11 +1,10 @@
-using MoreMountains.Feedbacks;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class EnemyPointsGiver : MonoBehaviour
 {
     [SerializeField] private Collider2D _collider;
-    [SerializeField] private MMF_Player _destroyFeedbacks;
     
     public int pointsForKill = 1; // Сколько поинтов даётся за убийство
     public static int totalKills = 0; // Общее количество убитых врагов
@@ -89,15 +88,42 @@ public class EnemyPointsGiver : MonoBehaviour
         KillCountDisplay killDisplay = FindObjectOfType<KillCountDisplay>();
         if (killDisplay != null)
             killDisplay.Refresh();
-
-        if (deathAudio != null)
-            deathAudio.Play();
-
-        var feedbacksDuration = _destroyFeedbacks.TotalDuration;
-        _destroyFeedbacks.PlayFeedbacks();
-        Destroy(gameObject, feedbacksDuration);
+        
+        StartCoroutine(BounceCoroutine());
     }
 
+    [SerializeField] private float _bounceDuration;
+    [SerializeField] private float _bounceMultiplier;
+    private IEnumerator BounceCoroutine()
+    {
+        var duration = _bounceDuration;
+        var maxMultiplier = _bounceMultiplier;
+        var originalScale = transform.localScale;
+
+        var time = 0f;
+
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            
+            var t = time < duration ? time / duration : 2f - time / duration;
+            var scaleFactor = Mathf.Lerp(1f, maxMultiplier, Mathf.SmoothStep(0f, 1f, t));
+            
+            transform.localScale = originalScale * scaleFactor;
+
+            yield return null;
+        }
+        
+        if (deathAudio != null)
+        {
+            deathAudio.Play();
+        }
+
+        transform.localScale = originalScale;
+        Destroy(gameObject);
+    }
+
+    
     // Уничтожаем врага и начисляем поинты при столкновении с Ball
     private void OnCollisionEnter2D(Collision2D collision)
     {
