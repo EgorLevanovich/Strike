@@ -183,7 +183,7 @@ public class Respawn : MonoBehaviour
             
             if (ballRb != null)
             {
-                ballRb.velocity = Vector2.zero;
+                ballRb.linearVelocity = Vector2.zero;
                 ballRb.angularVelocity = 0f;
             }
 
@@ -267,7 +267,7 @@ public class Respawn : MonoBehaviour
         // Устанавливаем начальную скорость падения, используя скорость из BallBounce
         if (ballRb != null && ballBounce != null)
         {
-            ballRb.velocity = new Vector2(0f, -ballBounce._speed);
+            ballRb.linearVelocity = new Vector2(0f, -ballBounce._speed);
         }
 
         // Включаем BallMovement обратно, чтобы он продолжал управлять падением

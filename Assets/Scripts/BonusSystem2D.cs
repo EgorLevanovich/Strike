@@ -187,20 +187,20 @@ public class BonusSystem2D : MonoBehaviour
         var refRb = referenceEnemyPrefab != null ? referenceEnemyPrefab.GetComponent<Rigidbody2D>() : null;
         if (bonusRb != null && refRb != null)
         {
-            bonusRb.velocity = refRb.velocity;
+            bonusRb.linearVelocity = refRb.linearVelocity;
             bonusRb.gravityScale = refRb.gravityScale;
-            bonusRb.drag = refRb.drag;
-            bonusRb.angularDrag = refRb.angularDrag;
+            bonusRb.linearDamping = refRb.linearDamping;
+            bonusRb.angularDamping = refRb.angularDamping;
             bonusRb.bodyType = refRb.bodyType;
             bonusRb.interpolation = refRb.interpolation;
             bonusRb.collisionDetectionMode = refRb.collisionDetectionMode;
             bonusRb.constraints = refRb.constraints;
-            StartCoroutine(ForceVelocity(bonusRb, refRb.velocity));
+            StartCoroutine(ForceVelocity(bonusRb, refRb.linearVelocity));
         }
         else if (bonusRb != null)
         {
-            bonusRb.velocity = refRb.velocity;
-            StartCoroutine(ForceVelocity(bonusRb, refRb.velocity));
+            bonusRb.linearVelocity = refRb.linearVelocity;
+            StartCoroutine(ForceVelocity(bonusRb, refRb.linearVelocity));
         }
     }
 
@@ -260,11 +260,11 @@ public class BonusSystem2D : MonoBehaviour
         Rigidbody2D cloneRb = newBall.GetComponent<Rigidbody2D>();
         if (origRb != null && cloneRb != null)
         {
-            float speed = origRb.velocity.magnitude;
+            float speed = origRb.linearVelocity.magnitude;
             if (speed < 1f) speed = 10f;
             Vector2 direction = Random.insideUnitCircle.normalized;
-            origRb.velocity = direction * speed;
-            cloneRb.velocity = -direction * speed;
+            origRb.linearVelocity = direction * speed;
+            cloneRb.linearVelocity = -direction * speed;
         }
 
         spawnedClones.Add(newBall); // Добавляем клон в список
@@ -310,7 +310,7 @@ public class BonusSystem2D : MonoBehaviour
 
         float startTime = Time.time;
         float endTime = startTime + homingDuration;
-        Vector2 originalVelocity = ballRb.velocity;
+        Vector2 originalVelocity = ballRb.linearVelocity;
         float originalSpeed = originalVelocity.magnitude;
         float originalAngularVelocity = ballRb.angularVelocity; // Сохраняем оригинальное вращение
         float destroyRadius = 1f;
@@ -373,7 +373,7 @@ public class BonusSystem2D : MonoBehaviour
             }
             if (targetsDestroyed >= maxTargets)
             {
-                ballRb.velocity = new Vector2(0, -originalSpeed); // строго вниз
+                ballRb.linearVelocity = new Vector2(0, -originalSpeed); // строго вниз
                 if (shouldRotate)
                 {
                     ballRb.angularVelocity = originalAngularVelocity; // Восстанавливаем оригинальное вращение
@@ -407,12 +407,12 @@ public class BonusSystem2D : MonoBehaviour
                 if (nearestEnemy != null)
                 {
                     Vector2 direction = (nearestEnemy.transform.position - ball.transform.position).normalized;
-                    ballRb.velocity = direction * homingSpeed;
+                    ballRb.linearVelocity = direction * homingSpeed;
                 }
                 else
                 {
                     // Если врагов нет, продолжаем движение с исходной скоростью
-                    ballRb.velocity = originalVelocity.normalized * originalSpeed;
+                    ballRb.linearVelocity = originalVelocity.normalized * originalSpeed;
                 }
             }
 
@@ -423,7 +423,7 @@ public class BonusSystem2D : MonoBehaviour
             bonusTimerText.gameObject.SetActive(false);
 
         // Возвращаем мяч к нормальному движению
-        ballRb.velocity = originalVelocity.normalized * originalSpeed;
+        ballRb.linearVelocity = originalVelocity.normalized * originalSpeed;
         if (shouldRotate)
         {
             ballRb.angularVelocity = originalAngularVelocity; // Восстанавливаем оригинальное вращение
@@ -536,10 +536,10 @@ public class BonusSystem2D : MonoBehaviour
         var refRb = referenceEnemyPrefab != null ? referenceEnemyPrefab.GetComponent<Rigidbody2D>() : null;
         if (bonusRb != null && refRb != null)
         {
-            bonusRb.velocity = velocity;
+            bonusRb.linearVelocity = velocity;
             bonusRb.gravityScale = refRb.gravityScale;
-            bonusRb.drag = refRb.drag;
-            bonusRb.angularDrag = refRb.angularDrag;
+            bonusRb.linearDamping = refRb.linearDamping;
+            bonusRb.angularDamping = refRb.angularDamping;
             bonusRb.bodyType = refRb.bodyType;
             bonusRb.interpolation = refRb.interpolation;
             bonusRb.collisionDetectionMode = refRb.collisionDetectionMode;
@@ -548,7 +548,7 @@ public class BonusSystem2D : MonoBehaviour
         }
         else if (bonusRb != null)
         {
-            bonusRb.velocity = velocity;
+            bonusRb.linearVelocity = velocity;
             StartCoroutine(ForceVelocity(bonusRb, velocity));
         }
         var controller = currentBonus.GetComponent<BonusController2D>();
@@ -625,10 +625,10 @@ public class BonusSystem2D : MonoBehaviour
         var refRb = referenceEnemyPrefab != null ? referenceEnemyPrefab.GetComponent<Rigidbody2D>() : null;
         if (bonusRb != null && refRb != null)
         {
-            bonusRb.velocity = velocity;
+            bonusRb.linearVelocity = velocity;
             bonusRb.gravityScale = refRb.gravityScale;
-            bonusRb.drag = refRb.drag;
-            bonusRb.angularDrag = refRb.angularDrag;
+            bonusRb.linearDamping = refRb.linearDamping;
+            bonusRb.angularDamping = refRb.angularDamping;
             bonusRb.bodyType = refRb.bodyType;
             bonusRb.interpolation = refRb.interpolation;
             bonusRb.collisionDetectionMode = refRb.collisionDetectionMode;
@@ -637,7 +637,7 @@ public class BonusSystem2D : MonoBehaviour
         }
         else if (bonusRb != null)
         {
-            bonusRb.velocity = velocity;
+            bonusRb.linearVelocity = velocity;
             StartCoroutine(ForceVelocity(bonusRb, velocity));
         }
         var controller = currentBonus.GetComponent<BonusController2D>();
@@ -651,7 +651,7 @@ public class BonusSystem2D : MonoBehaviour
     private IEnumerator ForceVelocity(Rigidbody2D rb, Vector2 velocity)
     {
         yield return null;
-        if (rb != null) rb.velocity = velocity;
+        if (rb != null) rb.linearVelocity = velocity;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

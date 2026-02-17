@@ -149,7 +149,7 @@ public class DeathCollider : MonoBehaviour
             
             if (ballRb != null)
             {
-                ballRb.velocity = Vector2.zero;
+                ballRb.linearVelocity = Vector2.zero;
                 ballRb.angularVelocity = 0f;
             }
 
@@ -220,7 +220,7 @@ public class DeathCollider : MonoBehaviour
         if (ballRb != null)
         {
             ballRb.isKinematic = false;
-            ballRb.velocity = new Vector2(0f, -_speed);
+            ballRb.linearVelocity = new Vector2(0f, -_speed);
         }
     }
 } 

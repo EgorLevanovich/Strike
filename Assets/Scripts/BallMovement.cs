@@ -27,7 +27,7 @@ public class BallMovement : MonoBehaviour
         // Движение вниз с постоянной скоростью
         if (rb != null)
         {
-            rb.velocity = new Vector2(0, -fallSpeed);
+            rb.linearVelocity = new Vector2(0, -fallSpeed);
         }
     }
 

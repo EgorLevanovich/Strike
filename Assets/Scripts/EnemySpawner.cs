@@ -74,7 +74,7 @@ public class EnemySpawner : MonoBehaviour
         Vector2 defaultVelocity = Vector2.down * 2f;
         var prefabRb = enemyPrefab.GetComponent<Rigidbody2D>();
         if (prefabRb != null)
-            defaultVelocity = prefabRb.velocity;
+            defaultVelocity = prefabRb.linearVelocity;
 
         bool bonusSpawned = false;
         for (int i = 0; i < _spawnPoints.Length; i++)
@@ -105,7 +105,7 @@ public class EnemySpawner : MonoBehaviour
                 enemy.transform.SetParent(null);*/
             var rb = enemy.GetComponent<Rigidbody2D>();
             if (rb != null)
-                rb.velocity = defaultVelocity;
+                rb.linearVelocity = defaultVelocity;
         }
         // Если бонус был заспавнен — сбрасываем оба флага
         if (bonusSystem != null && bonusSpawned)

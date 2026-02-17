@@ -176,7 +176,7 @@ public class HealthSystem : MonoBehaviour
             var ballRb = activeBall.GetComponent<Rigidbody2D>();
             if (ballRb != null)
             {
-                ballRb.velocity = Vector2.zero;
+                ballRb.linearVelocity = Vector2.zero;
                 ballRb.angularVelocity = 0f;
                 ballRb.isKinematic = true;
             }
@@ -197,7 +197,7 @@ public class HealthSystem : MonoBehaviour
                         plat.transform.position = plat.transform.parent.position;
                     else
                         plat.transform.position = new Vector3(0f, 0f, plat.transform.position.z);
-                    plat.velocity = Vector2.zero;
+                    plat.linearVelocity = Vector2.zero;
                     plat.angularVelocity = 0f;
                 }
             }
@@ -291,7 +291,7 @@ public class HealthSystem : MonoBehaviour
                         plat.transform.position = new Vector3(0f, 0f, plat.transform.position.z);
                         Debug.Log($"[Cracks] Platform {plat.name} moved to (0,0,z): {plat.transform.position}");
                     }
-                    plat.velocity = Vector2.zero;
+                    plat.linearVelocity = Vector2.zero;
                     plat.angularVelocity = 0f;
                 }
             }
@@ -402,7 +402,7 @@ public class HealthSystem : MonoBehaviour
             if (ballRb != null)
             {
                 ballRb.isKinematic = false;
-                ballRb.velocity = new Vector2(0f, -10f); // Можно скорректировать скорость
+                ballRb.linearVelocity = new Vector2(0f, -10f); // Можно скорректировать скорость
             }
         }
         // Делаем таймер видимым
@@ -544,9 +544,9 @@ public class HealthSystem : MonoBehaviour
         {
             ballRb.isKinematic = false;
             if (ballBounce != null)
-                ballRb.velocity = new Vector2(0f, -ballBounce._speed);
+                ballRb.linearVelocity = new Vector2(0f, -ballBounce._speed);
             else
-                ballRb.velocity = new Vector2(0f, -10f);
+                ballRb.linearVelocity = new Vector2(0f, -10f);
         }
     }
 

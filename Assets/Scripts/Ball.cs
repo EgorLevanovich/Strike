@@ -23,15 +23,15 @@ public class Ball : MonoBehaviour
 
     private void Update()
     {
-        lastVelocity = rb.velocity;
+        lastVelocity = rb.linearVelocity;
         // Реалистичное трение
-        if (rb.velocity.magnitude > minVelocity)
+        if (rb.linearVelocity.magnitude > minVelocity)
         {
-            rb.velocity *= friction;
+            rb.linearVelocity *= friction;
         }
-        else if (rb.velocity.magnitude > 0)
+        else if (rb.linearVelocity.magnitude > 0)
         {
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
         }
         //_myGoal.text = Goal[0].ToString();
     }
@@ -68,7 +68,7 @@ public class Ball : MonoBehaviour
         {
             float speed = lastVelocity.magnitude;
             Vector2 direction = Vector2.Reflect(lastVelocity.normalized, collision.contacts[0].normal);
-            rb.velocity = direction * speed * bounciness;
+            rb.linearVelocity = direction * speed * bounciness;
         }
 
         // Уничтожение шарика (пример: если столкнулся с Enemy или Ground)
