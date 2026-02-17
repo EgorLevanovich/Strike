@@ -10,7 +10,7 @@ public class KillCountDisplay : MonoBehaviour
     void Start()
     {
         // Устанавливаем центрирование текста при старте
-        if (killCountText != null)
+        /*if (killCountText != null)
         {
             killCountText.alignment = TextAnchor.MiddleCenter;
             killCountText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -38,7 +38,7 @@ public class KillCountDisplay : MonoBehaviour
             pointsPerHundredText.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             pointsPerHundredText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             pointsPerHundredText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        }
+        }*/
     }
 
     void Update()

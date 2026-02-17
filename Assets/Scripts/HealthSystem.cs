@@ -262,7 +262,7 @@ public class HealthSystem : MonoBehaviour
 
     private void EnableBalls(bool status)
     {
-        foreach (var ball in FindObjectsByType<BallMovement>(FindObjectsSortMode.None))
+        foreach (var ball in FindObjectsByType<BallMovement>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             ball.gameObject.SetActive(status);
         }
@@ -318,13 +318,8 @@ public class HealthSystem : MonoBehaviour
             _menu.SetActive(false);
         if (deathMenuMusicSource != null && deathMenuMusicSource.isPlaying)
             deathMenuMusicSource.Stop();
-        StartCoroutine(ShowRewardedWithDelay());
-    }
-
-    private IEnumerator ShowRewardedWithDelay()
-    {
+        
         AdsInitializer.Instance.ShowRewarded(OnAdWatched, OnRespawnFailured);
-        yield break;
     }
 
     private void OnAdWatched()
@@ -391,6 +386,11 @@ public class HealthSystem : MonoBehaviour
        
         EnableBalls(true);
         
+        var spawner = FindObjectOfType<EnemySpawner>();
+        if (spawner != null && spawner.gameObject.activeInHierarchy)
+        {
+            spawner.StartSpawningOnRespawn(true);
+        }
         
         // Включаем физику и движение мяча
         GameObject activeBall = GameObject.FindGameObjectWithTag("Ball");

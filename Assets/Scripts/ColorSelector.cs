@@ -5,11 +5,12 @@ using UnityEngine.UI;
 
 public class ColorSelector : MonoBehaviour
 {
+    [SerializeField] private GameObject borderObject;
+    
     private static ColorSelector currentlySelected;
     private Image buttonImage;
     private Button button;
     private Color originalColor;
-    private GameObject borderObject;
     private Image borderImage;
 
     void Start()
@@ -22,8 +23,10 @@ public class ColorSelector : MonoBehaviour
         }
 
         // Создаем объект для рамки
-        CreateBorder();
+        //CreateBorder();
 
+        SetAsUnselected();
+        
         // Проверяем, является ли этот цвет выбранным
         if (buttonImage != null && IsThisColorSelected())
         {

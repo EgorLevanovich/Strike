@@ -244,7 +244,7 @@ public class BallBounce : MonoBehaviour
         if (spawner != null && spawner.gameObject.activeInHierarchy)
         {
             spawner.StopAllCoroutines();
-            spawner.StartSpawningOnRespawn();
+            spawner.StartSpawningOnRespawn(true);
         }
 
         // 6. Скрываем меню смерти и возвращаем исходный UI

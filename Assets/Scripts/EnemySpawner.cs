@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -18,63 +20,54 @@ public class EnemySpawner : MonoBehaviour
     // Новое поле для ссылки на BonusSystem2D
     public BonusSystem2D bonusSystem;
 
+    [SerializeField] private Transform[] _spawnPoints = System.Array.Empty<Transform>();
+
     // Новый флаг для отслеживания начала новой волны
     private bool isNewWave = true;
+    private CancellationTokenSource _tokenSource;
 
-    void Start()
+    private void Start()
     {
-        StartCoroutine(ContinuousSpawning());
+        StartSpawningOnRespawn(false);
     }
 
-    IEnumerator ContinuousSpawning()
+    public void StartSpawningOnRespawn(bool usePreload)
     {
-        while (true)
+        Cancel();
+        Begin(usePreload);
+    }
+
+    public void Cancel()
+    {
+        if (_tokenSource != null)
+        {
+            _tokenSource.Cancel();
+            _tokenSource.Dispose();
+            _tokenSource = null;
+        }
+    }
+
+    public void Begin(bool usePreload)
+    {
+        _tokenSource = new CancellationTokenSource();
+        SpawnAsync(usePreload, _tokenSource.Token).Forget();
+    }
+
+    private async UniTask SpawnAsync(bool usePreload, CancellationToken token)
+    {
+        var delay = usePreload ? spawnInterval : 1f;
+        await UniTask.WaitForSeconds(delay, cancellationToken: token);
+        
+        while (!token.IsCancellationRequested)
         {
             isNewWave = true;
             SpawnLine();
-            yield return new WaitForSeconds(spawnInterval);
+            await UniTask.WaitForSeconds(spawnInterval, cancellationToken: token);
         }
     }
 
-    public void StartSpawningOnRespawn()
+    private void SpawnLine()
     {
-        StopAllCoroutines(); // Останавливаем все корутины спавнера
-        StartCoroutine(ContinuousSpawningAfterRespawn());
-    }
-
-    private IEnumerator ContinuousSpawningAfterRespawn()
-    {
-        // Первая задержка после респавна
-        yield return new WaitForSeconds(spawnInterval);
-
-        while (true)
-        {
-            isNewWave = true;
-            SpawnLine();
-            yield return new WaitForSeconds(spawnInterval);
-        }
-    }
-
-    void SpawnLine()
-    {
-        float prefabWidth = 1f;
-        if (enemyPrefab != null)
-        {
-            var sr = enemyPrefab.GetComponent<SpriteRenderer>();
-            if (sr != null)
-                prefabWidth = sr.bounds.size.x;
-            else
-            {
-                var collider = enemyPrefab.GetComponent<Collider2D>();
-                if (collider != null)
-                    prefabWidth = collider.bounds.size.x;
-            }
-        }
-        float spacing = prefabWidth + extraSpacing;
-        float totalLength = spacing * (enemyCount - 1);
-        Vector3 startPoint = transform.position - new Vector3(totalLength / 2, 0, 0);
-        startPoint.y += yOffset;
-
         bool spawnBonus = bonusSystem != null && bonusSystem.spawnBonusInNextWave && isNewWave;
         int bonusIndex = spawnBonus ? bonusSystem.bonusIndexInWave : -1;
 
@@ -84,9 +77,13 @@ public class EnemySpawner : MonoBehaviour
             defaultVelocity = prefabRb.velocity;
 
         bool bonusSpawned = false;
-        for (int i = 0; i < enemyCount; i++)
+        for (int i = 0; i < _spawnPoints.Length; i++)
         {
-            Vector3 spawnPos = startPoint + new Vector3(spacing * i, 0, 0);
+            var point = _spawnPoints[i];
+            var spawnPos = point.position;
+            
+            //Vector3 spawnPos = startPoint + new Vector3(spacing * i, 0, 0);
+            
             if (spawnBonus && i == bonusIndex && !bonusSpawned)
             {
                 // Только бонус, без обычного шарика!
@@ -104,8 +101,8 @@ public class EnemySpawner : MonoBehaviour
             }
             // Обычный шарик
             GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-            if (spawnContainer != null)
-                enemy.transform.SetParent(null);
+            /*if (spawnContainer != null)
+                enemy.transform.SetParent(null);*/
             var rb = enemy.GetComponent<Rigidbody2D>();
             if (rb != null)
                 rb.velocity = defaultVelocity;
@@ -119,7 +116,7 @@ public class EnemySpawner : MonoBehaviour
     }
 
     //  
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
         float prefabWidth = 1f;

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6605192050111209007}
   - component: {fileID: 3735707795189366191}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   - component: {fileID: 6483990022078285353}
   - component: {fileID: 108577488602658504}
   - component: {fileID: 4674286625231585290}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Ballon
   m_TagString: Enemy
   m_Icon: {fileID: 0}

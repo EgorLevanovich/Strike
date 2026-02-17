@@ -163,8 +163,8 @@ public class DeathCollider : MonoBehaviour
         var spawner = FindObjectOfType<EnemySpawner>();
         if (spawner != null && spawner.gameObject.activeInHierarchy)
         {
-            spawner.StopAllCoroutines();
-            spawner.StartSpawningOnRespawn();
+            //spawner.StopAllCoroutines();
+            spawner.StartSpawningOnRespawn(true);
         }
 
         if (_menuShit != null)

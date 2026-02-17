@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class EnemyPointsGiver : MonoBehaviour
 {
     [SerializeField] private Collider2D _collider;
+    [SerializeField] private SpriteRenderer _renderer;
     
     public int pointsForKill = 1; // Сколько поинтов даётся за убийство
     public static int totalKills = 0; // Общее количество убитых врагов
@@ -13,6 +14,8 @@ public class EnemyPointsGiver : MonoBehaviour
     private const string HIGHSCORE_KEY = "KillHighScore";
 
     public AudioSource deathAudio;
+
+    public SpriteRenderer Renderer => _renderer;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void OnSceneLoaded()
