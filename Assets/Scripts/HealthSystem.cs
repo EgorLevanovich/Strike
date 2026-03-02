@@ -389,7 +389,7 @@ public class HealthSystem : MonoBehaviour
         var spawner = FindObjectOfType<EnemySpawner>();
         if (spawner != null && spawner.gameObject.activeInHierarchy)
         {
-            spawner.StartSpawningOnRespawn(true);
+            spawner.StartSpawningOnRespawn(false);
         }
         
         // Включаем физику и движение мяча

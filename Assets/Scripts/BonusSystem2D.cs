@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine.UI;
 
 public enum BonusType { CloneBall, Homing, DoublePoints }
@@ -36,7 +37,7 @@ public class BonusSystem2D : MonoBehaviour
     public float doublePointsDuration = 15f;
     public GameObject _DoublePoints;
 
-    public Text bonusTimerText;
+    public TextMeshProUGUI bonusTimerText;
 
     private GameObject currentBonus;
     private bool isBonusActive = false;
@@ -255,6 +256,7 @@ public class BonusSystem2D : MonoBehaviour
 
         newBall.tag = "CloneBall";
         newBall.transform.localScale = originalBall.transform.localScale;
+        newBall.transform.SetParent(originalBall.transform.parent);
 
         Rigidbody2D origRb = originalBall.GetComponent<Rigidbody2D>();
         Rigidbody2D cloneRb = newBall.GetComponent<Rigidbody2D>();

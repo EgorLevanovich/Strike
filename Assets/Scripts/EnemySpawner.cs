@@ -55,7 +55,7 @@ public class EnemySpawner : MonoBehaviour
 
     private async UniTask SpawnAsync(bool usePreload, CancellationToken token)
     {
-        var delay = usePreload ? spawnInterval : 1f;
+        var delay = usePreload ? spawnInterval : 1.5f;
         await UniTask.WaitForSeconds(delay, cancellationToken: token);
         
         while (!token.IsCancellationRequested)

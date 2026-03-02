@@ -97,7 +97,7 @@ public class BallManager : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
         for (int i = 0; i < balls.Count; i++)
         {
