@@ -108,6 +108,11 @@ public class HealthSystem : MonoBehaviour
         currentHP = 0;
 
         EnableBalls(false);
+        var spawner = FindAnyObjectByType<EnemySpawner>();
+        if (spawner != null && spawner.gameObject.activeInHierarchy)
+        {
+            spawner.StartSpawningOnRespawn(false);
+        }
         
         // Скрываем таймер бонуса всегда при смерти
         if (objectToHide != null) objectToHide.SetActive(false);

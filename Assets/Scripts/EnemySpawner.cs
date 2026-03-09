@@ -24,6 +24,7 @@ public class EnemySpawner : MonoBehaviour
 
     // Новый флаг для отслеживания начала новой волны
     private bool isNewWave = true;
+    private float _cachedDelay;
     private CancellationTokenSource _tokenSource;
 
     private void Start()
@@ -52,22 +53,47 @@ public class EnemySpawner : MonoBehaviour
         _tokenSource = new CancellationTokenSource();
         SpawnAsync(usePreload, _tokenSource.Token).Forget();
     }
-
+    
     private async UniTask SpawnAsync(bool usePreload, CancellationToken token)
     {
-        var delay = usePreload ? spawnInterval : 1.5f;
-        await UniTask.WaitForSeconds(delay, cancellationToken: token);
+        await UniTask.Yield();
+        var delay = usePreload ? spawnInterval : _cachedDelay;
+        
+        await WaitAsync(delay, token);
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
         
         while (!token.IsCancellationRequested)
         {
             isNewWave = true;
             SpawnLine();
-            await UniTask.WaitForSeconds(spawnInterval, cancellationToken: token);
+            await WaitAsync(spawnInterval, token);
+            //await UniTask.WaitForSeconds(spawnInterval, cancellationToken: token);
+        }
+    }
+    
+    private async UniTask WaitAsync(float delay, CancellationToken token)
+    {
+        var timer = 0f;
+        while (timer < delay && !token.IsCancellationRequested)
+        {
+            timer += Time.deltaTime;
+            _cachedDelay = delay - timer;
+            await UniTask.Yield();
+        }
+
+        if (_cachedDelay < 0)
+        {
+            _cachedDelay = 0;
         }
     }
 
     private void SpawnLine()
     {
+        Canvas.ForceUpdateCanvases();
+        
         bool spawnBonus = bonusSystem != null && bonusSystem.spawnBonusInNextWave && isNewWave;
         int bonusIndex = spawnBonus ? bonusSystem.bonusIndexInWave : -1;
 
